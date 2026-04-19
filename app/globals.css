@@ -124,3 +124,109 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ────────────────────────────────────────────────────────────────
+   Motion + halo system — used by the facelifted marketing surfaces
+   ──────────────────────────────────────────────────────────────── */
+
+@keyframes lph-halo-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(0, 232, 90, 0.35) inset,
+      0 0 24px rgba(0, 232, 90, 0.35),
+      0 0 72px rgba(0, 232, 90, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(0, 232, 90, 0.5) inset,
+      0 0 48px rgba(0, 232, 90, 0.55),
+      0 0 120px rgba(0, 232, 90, 0.3);
+  }
+}
+
+@keyframes lph-float {
+  0%, 100% { transform: translateY(0) }
+  50% { transform: translateY(-10px) }
+}
+
+@keyframes lph-grid-drift {
+  0% { transform: translate(0, 0) }
+  100% { transform: translate(40px, 40px) }
+}
+
+@keyframes lph-shimmer {
+  0% { transform: translateX(-120%) }
+  100% { transform: translateX(120%) }
+}
+
+@keyframes lph-blob {
+  0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg) }
+  33% { transform: translate(-52%, -48%) scale(1.08) rotate(8deg) }
+  66% { transform: translate(-48%, -52%) scale(0.96) rotate(-6deg) }
+}
+
+@keyframes lph-fade-up {
+  from { opacity: 0; transform: translateY(28px) }
+  to { opacity: 1; transform: translateY(0) }
+}
+
+.lph-halo {
+  box-shadow:
+    0 0 0 1px rgba(0, 232, 90, 0.35) inset,
+    0 0 28px rgba(0, 232, 90, 0.4),
+    0 0 72px rgba(0, 232, 90, 0.18);
+}
+
+.lph-halo-pulse { animation: lph-halo-pulse 4.5s ease-in-out infinite }
+.lph-float       { animation: lph-float 6s ease-in-out infinite }
+.lph-blob        { animation: lph-blob 18s ease-in-out infinite }
+.lph-grid-drift  { animation: lph-grid-drift 8s linear infinite alternate }
+
+.lph-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.lph-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lph-grid {
+  background-image:
+    linear-gradient(rgba(0, 232, 90, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 232, 90, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.lph-shimmer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  animation: lph-shimmer 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lph-halo-pulse,
+  .lph-float,
+  .lph-blob,
+  .lph-grid-drift,
+  .lph-shimmer::before {
+    animation: none !important;
+  }
+  .lph-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

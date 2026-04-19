@@ -1,14 +1,85 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Card } from "@/components/ui/card"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Shield, Link2, Zap, Check } from "lucide-react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Shield, Link2, Zap, ArrowRight, QrCode, Sparkles } from "lucide-react"
 import { supabase } from "@/lib/supabaseclient"
 import { Session } from "@supabase/supabase-js"
+
+// ── Scroll-triggered reveal ──────────────────────────────────────────────
+function useReveal<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            el.classList.add("is-visible")
+            obs.unobserve(el)
+          }
+        })
+      },
+      { threshold: 0.15, rootMargin: "-50px 0px" },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+  return ref
+}
+
+function Reveal({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
+  const ref = useReveal<HTMLDivElement>()
+  return (
+    <div
+      ref={ref}
+      className={`lph-reveal ${className}`}
+      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+    >
+      {children}
+    </div>
+  )
+}
+
+// ── Subtle parallax Y based on scroll ────────────────────────────────────
+function useParallax(strength = 0.15) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let raf = 0
+    const onScroll = () => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        const rect = el.getBoundingClientRect()
+        const vh = window.innerHeight
+        const center = rect.top + rect.height / 2 - vh / 2
+        el.style.setProperty("--parallax", `${-center * strength}px`)
+      })
+    }
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    window.addEventListener("resize", onScroll)
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      window.removeEventListener("resize", onScroll)
+    }
+  }, [strength])
+  return ref
+}
 
 export default function HomePage() {
   const router = useRouter()
@@ -16,34 +87,26 @@ export default function HomePage() {
   const [session, setSession] = useState<Session | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
 
+  const phoneRef = useParallax(0.08)
+  const heroBlobRef = useParallax(0.05)
+
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession()
       setSession(data.session)
       setAuthLoading(false)
     }
-
     checkSession()
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
     return () => subscription?.unsubscribe()
   }, [])
 
   const handleGetStarted = () => {
-    if (username) {
-      localStorage.setItem("linkpayhub_temp_username", username)
-    }
+    if (username) localStorage.setItem("linkpayhub_temp_username", username)
     router.push("/onboarding")
   }
 
-  const handleLogin = () => {
-    router.push("/login")
-  }
-
+  const handleLogin = () => router.push("/login")
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setSession(null)
@@ -51,38 +114,44 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black overflow-x-hidden">
-      {/* Subtle animated gradient background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-[#001a0a] to-black opacity-100 pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(0,232,90,0.08)_0%,_transparent_50%)] pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(0,168,63,0.06)_0%,_transparent_50%)] pointer-events-none" />
-      
-      <header className="relative z-10 bg-black/80 backdrop-blur-sm border-b border-[#1a1a1a]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-4 sm:py-6 font-mono flex items-center justify-between">
-          <Link href="/" className="inline-flex flex-col gap-0.5 sm:gap-1">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Image src="/linkpayhub-logo.png" alt="LinkPayHub Logo" width={64} height={64} className="rounded-xl w-10 h-10 sm:w-16 sm:h-16" />
-              <span className="font-bold text-[#00e85a] font-mono text-2xl sm:text-4xl drop-shadow-[0_0_20px_rgba(0,232,90,0.3)]">
-                LinkPayHub
-              </span>
-            </div>
-            <p className="text-[#00a83f] font-medium ml-12 sm:ml-20 text-xs sm:text-sm">The easiest way to get paid.</p>
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      {/* ─── Ambient background ─────────────────────────────────────────── */}
+      <div className="fixed inset-0 bg-gradient-to-br from-black via-[#010804] to-black pointer-events-none" aria-hidden />
+      <div className="fixed inset-0 lph-grid opacity-[0.18] pointer-events-none lph-grid-drift" aria-hidden />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,232,90,0.12)_0%,_transparent_55%)] pointer-events-none" aria-hidden />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom,_rgba(0,232,90,0.05)_0%,_transparent_60%)] pointer-events-none" aria-hidden />
+
+      {/* ─── Header ─────────────────────────────────────────────────────── */}
+      <header className="relative z-20 sticky top-0 bg-black/60 backdrop-blur-xl border-b border-white/[0.06]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image src="/linkpayhub-logo.png" alt="LinkPayHub" width={40} height={40} className="rounded-xl w-9 h-9 sm:w-10 sm:h-10" />
+            <span className="font-bold text-white tracking-tight text-lg sm:text-xl">
+              LinkPayHub
+            </span>
           </Link>
 
-          {/* Auth Button */}
           {!authLoading && (
-            <div>
+            <div className="flex items-center gap-2">
               {session ? (
-                <button
-                  onClick={handleLogout}
-                  className="px-6 py-2.5 bg-[#00e85a] text-black font-semibold rounded-full hover:bg-[#00c84e] transition-colors text-sm sm:text-base shadow-[0_0_20px_rgba(0,232,90,0.3)]"
-                >
-                  Logout
-                </button>
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="hidden sm:inline-flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition px-3 py-2 rounded-full"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-white/70 hover:text-white transition px-4 py-2 rounded-full border border-white/10 hover:border-white/20"
+                  >
+                    Logout
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={handleLogin}
-                  className="px-6 py-2.5 bg-[#1a6bff] text-white font-semibold rounded-full hover:bg-[#0055e0] transition-colors text-sm sm:text-base shadow-[0_4px_20px_rgba(26,107,255,0.3)]"
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-white/80 hover:text-white transition px-4 py-2 rounded-full border border-white/10 hover:border-white/20"
                 >
                   Login
                 </button>
@@ -92,381 +161,346 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Get Started for Free — CTA Banner */}
-      <section className="relative z-10 py-10 sm:py-14 px-4 sm:px-6 overflow-hidden">
-        {/* Radial glow behind text */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(26,107,255,0.12)_0%,_transparent_70%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.06)_0%,_transparent_60%)] pointer-events-none" />
-
-        <div className="relative max-w-4xl mx-auto text-center space-y-4 sm:space-y-5">
-          {/* Eyebrow pill */}
-          <div className="inline-flex items-center gap-2 bg-[#1a6bff]/10 border border-[#1a6bff]/30 text-[#1a6bff] text-xs sm:text-sm font-semibold px-4 py-1.5 rounded-full">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#1a6bff] animate-pulse" />
-            No credit card required
-          </div>
-
-          {/* Primary CTA headline */}
-          <h2 className="text-[36px] sm:text-[52px] lg:text-[68px] font-black leading-[1.05] tracking-tight text-balance">
-            <span className="text-white">Payments Made</span>{" "}
-            <span className="text-[#00e85a] drop-shadow-[0_0_30px_rgba(0,232,90,0.4)]">Easy</span>
-          </h2>
-
-          {/* Supporting line */}
-          <p className="text-sm text-[#00a83f] max-w-xl mx-auto leading-relaxed sm:text-3xl text-[rgba(220,110,0,1)]">
-            {"Create your personal payment link in 30 seconds \n no account needed to start."}
-          </p>
-
-          {/* Arrow pointing down toward the hero */}
-          <div className="pt-2 flex justify-center">
-            <svg
-              className="w-6 h-6 text-[#1a6bff] animate-bounce"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+      {/* ─── Hero ───────────────────────────────────────────────────────── */}
+      <section className="relative z-10 overflow-hidden">
+        {/* Parallax green blob */}
+        <div ref={heroBlobRef} className="absolute top-[20%] left-1/2 w-[800px] h-[800px] max-w-[110vw] max-h-[110vw] pointer-events-none" style={{ transform: "translate(-50%, -50%) translateY(var(--parallax, 0px))" }} aria-hidden>
+          <div className="w-full h-full bg-[radial-gradient(circle,_rgba(0,232,90,0.18)_0%,_transparent_55%)] lph-blob" />
         </div>
 
-        {/* Bottom divider glow line */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-[#1a6bff]/40 to-transparent" />
-      </section>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-10 sm:pt-20 lg:pt-28 pb-16 sm:pb-24 lg:pb-32">
+          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-10 sm:gap-14 lg:gap-16 items-center">
+            {/* LEFT: Copy + CTA */}
+            <div className="space-y-8 text-center lg:text-left">
+              <Reveal>
+                <span className="inline-flex items-center gap-2 bg-[#00e85a]/[0.07] border border-[#00e85a]/30 text-[#00e85a] text-[11px] sm:text-xs font-semibold tracking-[0.15em] uppercase px-3 py-1.5 rounded-full shadow-[0_0_24px_rgba(0,232,90,0.15)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00e85a] shadow-[0_0_10px_rgba(0,232,90,0.9)]" />
+                  No credit card · 30 sec setup
+                </span>
+              </Reveal>
 
-      <section className="relative py-10 sm:py-20 lg:py-28 z-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#001a08]/30 to-transparent pointer-events-none" />
+              <Reveal delay={80}>
+                <h1 className="font-black tracking-tight leading-[0.92] text-[56px] xs:text-[64px] sm:text-[88px] lg:text-[104px] xl:text-[128px]">
+                  <span className="block text-white">One link.</span>
+                  <span className="block bg-gradient-to-br from-[#00e85a] via-[#00e85a] to-[#00a83f] bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(0,232,90,0.35)]">
+                    Every payment.
+                  </span>
+                </h1>
+              </Reveal>
 
-        <div className="max-w-7xl mx-auto relative z-10 px-4 sm:px-6 lg:px-8 w-full">
+              <Reveal delay={160}>
+                <p className="text-base sm:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                  Stop asking "Cash App or Venmo?" Share <span className="text-white font-medium">linkpayhub.com/you</span> — every payment method you have, in one tap. No fees. No middlemen.
+                </p>
+              </Reveal>
 
-          {/* --- Mobile layout: headline → phone mockup → CTA --- */}
-          <div className="flex flex-col items-center gap-6 lg:hidden">
+              <Reveal delay={240}>
+                <div className="max-w-md mx-auto lg:mx-0 space-y-3">
+                  <div className="relative flex items-center overflow-hidden rounded-full bg-[#0a0a0a] border border-white/10 hover:border-[#00e85a]/50 transition-colors shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+                    <span className="pl-5 pr-1 py-3 sm:py-4 text-sm sm:text-base text-white/40 whitespace-nowrap font-mono">
+                      linkpayhub.com/
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="yourname"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
+                      className="flex-1 min-w-0 bg-transparent outline-none text-white font-semibold text-base sm:text-lg placeholder:text-white/30 pr-4"
+                      aria-label="Choose your username"
+                    />
+                  </div>
+                  <button
+                    onClick={handleGetStarted}
+                    disabled={!username}
+                    className="group relative overflow-hidden w-full bg-[#00e85a] text-black px-7 py-4 sm:py-5 rounded-full font-bold text-base sm:text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:lph-halo-pulse enabled:hover:scale-[1.02] enabled:active:scale-[0.98] lph-shimmer"
+                  >
+                    <span className="relative z-10 inline-flex items-center justify-center gap-2">
+                      Claim your link
+                      <ArrowRight className="w-5 h-5 transition-transform group-enabled:group-hover:translate-x-0.5" />
+                    </span>
+                  </button>
+                  <p className="text-xs text-white/40 text-center lg:text-left">
+                    No login required to start. Takes 30 seconds.
+                  </p>
+                </div>
+              </Reveal>
 
-            {/* Headline ONLY above phone on mobile */}
-            <div className="w-full text-center">
-              <h1 className="text-[30px] sm:text-[42px] font-extrabold text-[#00e85a] leading-[1.15] tracking-tight drop-shadow-[0_0_40px_rgba(0,232,90,0.25)]">
-                One link for all your payments.
-              </h1>
+              <Reveal delay={320}>
+                <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.15em] font-semibold pt-2">
+                  <span className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-[#00e85a]" /> Never touches your money</span>
+                  <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-[#00e85a]" /> Instant deep links</span>
+                  <span className="flex items-center gap-1.5"><QrCode className="w-3 h-3 text-[#00e85a]" /> QR-ready</span>
+                </div>
+              </Reveal>
             </div>
 
-            {/* Phone mockup — hero image below headline */}
-            <div className="w-full flex justify-center">
-              <div className="relative w-[220px] xs:w-[260px] sm:w-[300px]">
+            {/* RIGHT: Phone mockup */}
+            <div className="relative flex justify-center lg:justify-end">
+              <div
+                ref={phoneRef}
+                className="relative w-[240px] sm:w-[300px] lg:w-[360px] xl:w-[400px] lph-float"
+                style={{ transform: "translateY(var(--parallax, 0px))" }}
+              >
+                {/* Glow aura */}
+                <div className="absolute -inset-10 bg-[radial-gradient(circle,_rgba(0,232,90,0.35)_0%,_transparent_65%)] pointer-events-none blur-2xl" aria-hidden />
+
                 <div
-                  className="relative bg-gradient-to-br from-[#2C2C2C] via-[#1a1a1a] to-[#0a0a0a] rounded-[2.5rem] p-2"
-                  style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 2px rgba(255,255,255,0.15)" }}
+                  className="relative bg-gradient-to-br from-[#1f1f1f] via-[#0f0f0f] to-[#050505] rounded-[2.8rem] lg:rounded-[3.5rem] p-2.5 lg:p-3"
+                  style={{
+                    boxShadow:
+                      "0 40px 100px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 2px rgba(255,255,255,0.15), 0 0 120px rgba(0,232,90,0.22)",
+                  }}
                 >
-                  <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-tr from-white/10 via-transparent to-white/5 pointer-events-none" />
-                  {/* Notch */}
-                  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-5 bg-[#111] rounded-full z-20" />
-                  <div className="relative bg-white rounded-[2rem] overflow-hidden" style={{ aspectRatio: "9 / 19.5" }}>
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-transparent pointer-events-none z-10" />
-                    <div className="bg-white px-4 pt-7 pb-2">
+                  <div className="absolute top-2.5 lg:top-3 left-1/2 -translate-x-1/2 w-16 lg:w-24 h-5 lg:h-7 bg-black rounded-full z-20" />
+
+                  <div className="relative bg-white rounded-[2.3rem] lg:rounded-[3rem] overflow-hidden" style={{ aspectRatio: "9 / 19.5" }}>
+                    <div className="bg-white px-5 pt-7 pb-1.5">
                       <div className="flex justify-between items-center text-[10px] font-semibold text-black">
                         <span>9:41</span>
-                        <div className="w-4 h-2.5 border border-black rounded-sm relative">
+                        <div className="w-3.5 h-2.5 border border-black rounded-sm relative">
                           <div className="absolute inset-0.5 bg-black rounded-[1px]" />
                         </div>
                       </div>
                     </div>
-                    <div className="bg-gradient-to-b from-[#F5FFF8] to-white px-4 py-5 text-center">
-                      <div className="w-16 h-16 mx-auto rounded-full mb-3 overflow-hidden shadow-lg ring-2 ring-white">
-                        <Image src="/maryjane-avatar.png" alt="Maryjane Profile" width={64} height={64} className="w-full h-full object-cover" />
+                    <div className="bg-gradient-to-b from-[#F5FFF8] to-white px-5 pt-5 pb-8 text-center">
+                      <div className="w-20 h-20 mx-auto rounded-full mb-3 overflow-hidden shadow-lg ring-2 ring-white">
+                        <Image src="/maryjane-avatar.png" alt="" width={80} height={80} className="w-full h-full object-cover" />
                       </div>
-                      <h2 className="text-base font-bold text-[#0B0B0B] mb-0.5">@Maryjane</h2>
-                      <p className="text-[10px] text-[#5A5A5A] mb-4">Business owner of Beauty Salon</p>
-                      <div className="space-y-2">
-                        <div className="bg-[#00D632] text-white py-2.5 px-3 rounded-full font-semibold text-xs shadow flex items-center justify-center gap-1.5">
-                          <span className="text-sm">$</span> Cash App
+                      <h2 className="text-lg font-bold text-[#0B0B0B] mb-0.5">@Maryjane</h2>
+                      <p className="text-[11px] text-[#5A5A5A] mb-5">Business owner · Beauty Salon</p>
+                      <div className="space-y-2.5">
+                        <div className="bg-[#00D632] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5">
+                          <span>$</span> Cash App
                         </div>
-                        <div className="bg-[#008CFF] text-white py-2.5 px-3 rounded-full font-semibold text-xs shadow flex items-center justify-center gap-1.5">
-                          <span className="font-bold">V</span> Venmo
+                        <div className="bg-[#008CFF] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5">
+                          <span>V</span> Venmo
                         </div>
-                        <div className="bg-[#6D1ED4] text-white py-2.5 px-3 rounded-full font-semibold text-xs shadow flex items-center justify-center gap-1.5">
-                          <span className="font-bold">Z</span> Zelle
+                        <div className="bg-[#6D1ED4] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5">
+                          <span>Z</span> Zelle
                         </div>
-                        <div className="bg-[#000000] text-white py-2.5 px-3 rounded-full font-semibold text-xs shadow flex items-center justify-center gap-1.5">
-                          <span className="font-bold">A</span> Apple Pay
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-20 h-1 bg-white/30 rounded-full" />
-                </div>
-              </div>
-            </div>
-
-            {/* All remaining text + CTA below phone on mobile */}
-            <div className="w-full text-center space-y-5 max-w-sm mx-auto">
-              <p className="text-sm sm:text-base text-[#00c84e] leading-relaxed">
-                Save your Cash App, Venmo, and Zelle usernames once – clients click and pay you directly in the app they choose.
-              </p>
-              <p className="text-xs sm:text-sm text-[#00a83f] font-semibold">
-                We never touch your money. Your payment apps open directly to your exact profile.
-              </p>
-              <div className="w-full space-y-3">
-              <div className="bg-white rounded-full px-4 border border-white/20 flex items-center gap-2 shadow-[0_4px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_6px_32px_rgba(0,0,0,0.5)] transition-shadow py-3">
-                <span className="text-[#1a6bff] font-semibold whitespace-nowrap text-xs">linkpayhub.com/</span>
-                <input
-                  type="text"
-                  placeholder="yourname"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
-                  className="flex-1 min-w-0 bg-transparent outline-none text-[#0047e0] font-bold text-sm placeholder:text-[#93b4ff]"
-                />
-              </div>
-              <button
-                onClick={handleGetStarted}
-                disabled={!username}
-                className="w-full bg-[#1a6bff] text-white px-6 py-4 rounded-full font-bold text-sm hover:bg-[#0055e0] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_4px_20px_rgba(26,107,255,0.45)]"
-              >
-                Create your link
-              </button>
-              <p className="text-xs font-medium text-[#00a83f] text-center">Takes 30 seconds. No login required.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* --- Desktop layout: text left, phone right (side by side) --- */}
-          <div className="hidden lg:grid lg:grid-cols-2 items-center gap-16">
-            <div className="space-y-10 text-left">
-              <div className="space-y-6">
-                <h1 className="text-[56px] xl:text-[68px] font-extrabold text-[#00e85a] leading-[1.1] tracking-tight drop-shadow-[0_0_40px_rgba(0,232,90,0.25)] mx-[46px] my-px py-[19px] text-center">
-                  One Link For All Your Payments.
-                </h1>
-                <p className="text-[19px] text-[#00c84e] leading-[1.65] max-w-lg text-destructive-foreground mx-7 text-center">
-                  Save your Cash App, Venmo, and Zelle usernames once clients click and pay you directly in the app they choose.
-                </p>
-                <p className="text-[15px] text-[#00a83f] leading-relaxed font-semibold max-w-lg text-destructive-foreground mx-[25px] text-center">
-                  We never touch your money. Your payment apps open directly to your exact profile.
-                </p>
-              </div>
-              <div className="max-w-md space-y-5">
-                <div className="bg-white rounded-full px-6 border border-white/20 flex items-center shadow-[0_4px_28px_rgba(0,0,0,0.45)] hover:shadow-[0_8px_36px_rgba(0,0,0,0.55)] transition-shadow py-3.5 mx-[11px] gap-2.5">
-                  <span className="text-[#1a6bff] font-semibold whitespace-nowrap text-sm">linkpayhub.com/</span>
-                  <input
-                    type="text"
-                    placeholder="yourname"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
-                    className="flex-1 min-w-0 bg-transparent outline-none text-[#0047e0] font-bold text-base placeholder:text-[#93b4ff]"
-                  />
-                </div>
-                <button
-                  onClick={handleGetStarted}
-                  disabled={!username}
-                  className="w-full bg-[#1a6bff] text-white px-8 py-5 rounded-full font-bold text-lg hover:bg-[#0055e0] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_4px_24px_rgba(26,107,255,0.45)]"
-                >
-                  Create your link
-                </button>
-                <p className="text-sm font-medium text-[#00a83f] text-center">Takes 30 seconds. No login required.</p>
-              </div>
-            </div>
-
-            <div className="flex justify-center">
-              <div className="relative w-[360px] xl:w-[400px]">
-                <div
-                  className="relative bg-gradient-to-br from-[#2C2C2C] via-[#1a1a1a] to-[#0a0a0a] rounded-[3.5rem] p-3"
-                  style={{ boxShadow: "0 30px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 2px rgba(255,255,255,0.2)" }}
-                >
-                  <div className="absolute inset-0 rounded-[3.5rem] bg-gradient-to-tr from-white/10 via-transparent to-white/5 pointer-events-none" />
-                  <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-6 bg-[#111] rounded-full z-20" />
-                  <div className="relative bg-white rounded-[3rem] overflow-hidden" style={{ aspectRatio: "9 / 19.5" }}>
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-transparent to-transparent pointer-events-none z-10" />
-                    <div className="bg-white px-6 pt-8 pb-2">
-                      <div className="flex justify-between items-center text-xs font-semibold text-black">
-                        <span>9:41</span>
-                        <div className="w-4 h-3 border border-black rounded-sm relative">
-                          <div className="absolute inset-0.5 bg-black rounded-[1px]" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-gradient-to-b from-[#F5FFF8] to-white px-6 py-10 text-center">
-                      <div className="w-28 h-28 mx-auto rounded-full mb-5 overflow-hidden shadow-lg ring-4 ring-white">
-                        <Image src="/maryjane-avatar.png" alt="Maryjane Profile" width={112} height={112} className="w-full h-full object-cover" />
-                      </div>
-                      <h2 className="text-2xl font-bold text-[#0B0B0B] mb-1">@Maryjane</h2>
-                      <p className="text-sm text-[#5A5A5A] mb-8">Business owner of Beauty Salon</p>
-                      <div className="space-y-3.5">
-                        <div className="bg-[#00D632] text-white py-4 px-4 rounded-full font-semibold text-base shadow-lg flex items-center justify-center gap-2">
-                          <span className="text-xl">$</span> Cash App
-                        </div>
-                        <div className="bg-[#008CFF] text-white py-4 px-4 rounded-full font-semibold text-base shadow-lg flex items-center justify-center gap-2">
-                          <span className="font-bold text-lg">V</span> Venmo
-                        </div>
-                        <div className="bg-[#6D1ED4] text-white py-4 px-4 rounded-full font-semibold text-base shadow-lg flex items-center justify-center gap-2">
-                          <span className="font-bold text-lg">Z</span> Zelle
-                        </div>
-                        <div className="bg-[#000000] text-white py-4 px-4 rounded-full font-semibold text-base shadow-lg flex items-center justify-center gap-2">
-                          <span className="font-bold text-lg">A</span> Apple Pay
+                        <div className="bg-black text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5">
+                          <span>A</span> Apple Pay
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-white/30 rounded-full" />
+                </div>
+
+                {/* Floating pill accent */}
+                <div className="absolute -left-8 sm:-left-14 top-20 bg-[#0a0a0a]/90 backdrop-blur border border-[#00e85a]/30 rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-semibold text-[#00e85a] flex items-center gap-1.5 shadow-[0_0_24px_rgba(0,232,90,0.25)] lph-float">
+                  <Sparkles className="w-3 h-3" />
+                  Just tap to pay
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="relative py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-b from-black via-[#050a06] to-[#080808] z-10">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4">How it works</h2>
-            <p className="text-base sm:text-xl text-[#00a83f]">Get started in three simple steps</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 sm:gap-12">
-            <div className="text-center space-y-3 sm:space-y-4">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-[#0d1a10] border border-[#00e85a]/20 flex items-center justify-center mb-4 sm:mb-6">
-                <Check className="h-7 w-7 sm:h-8 sm:w-8 text-[#00e85a]" />
+      {/* ─── Social proof / stats ───────────────────────────────────────── */}
+      <section className="relative z-10 py-10 sm:py-16 border-y border-white/[0.06] bg-black/40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10">
+          {[
+            { num: "1", label: "Link to share" },
+            { num: "8+", label: "Payment apps" },
+            { num: "0%", label: "Platform fees" },
+            { num: "30s", label: "Setup time" },
+          ].map((s, i) => (
+            <Reveal key={s.label} delay={i * 80}>
+              <div className="text-center md:text-left">
+                <div className="font-black text-4xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-none">
+                  {s.num}
+                </div>
+                <div className="text-[11px] sm:text-xs uppercase tracking-[0.15em] text-white/40 mt-2 font-semibold">
+                  {s.label}
+                </div>
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-[#00e85a]">Pick your username</h3>
-              <p className="text-[#00a83f] text-base sm:text-lg leading-relaxed">
-                Choose a unique username for your personal payment link
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── How it works ───────────────────────────────────────────────── */}
+      <section className="relative z-10 py-24 sm:py-32 px-4 sm:px-6 lg:px-10">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <div className="max-w-2xl mb-14 sm:mb-20">
+              <span className="inline-block text-[11px] uppercase tracking-[0.2em] text-[#00e85a] font-semibold mb-4">
+                How it works
+              </span>
+              <h2 className="font-black tracking-tight text-4xl sm:text-5xl lg:text-6xl text-white leading-[1.02]">
+                Three steps.<br />
+                <span className="text-white/40">Thirty seconds.</span>
+              </h2>
+            </div>
+          </Reveal>
+
+          <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
+            {[
+              { n: "01", icon: Shield, title: "Pick your username", body: "Grab your handle — linkpayhub.com/you. It's yours to keep and share anywhere." },
+              { n: "02", icon: Link2, title: "Add your payment apps", body: "Paste your Cash App, Venmo, PayPal, Zelle, Apple Pay, Bitcoin, or Stripe. Takes seconds." },
+              { n: "03", icon: Zap, title: "Share one link. Get paid.", body: "Text it, post it, put it on your card. Every payer opens the app they already use." },
+            ].map((step, i) => (
+              <Reveal key={step.n} delay={i * 120}>
+                <div className="group relative h-full bg-gradient-to-b from-[#0a0a0a] to-[#050505] border border-white/[0.08] rounded-3xl p-7 sm:p-8 hover:border-[#00e85a]/40 transition-all duration-500 overflow-hidden">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(0,232,90,0.08)_0%,_transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden />
+
+                  <div className="relative">
+                    <div className="flex items-start justify-between mb-8">
+                      <div className="w-12 h-12 rounded-2xl bg-[#00e85a]/10 border border-[#00e85a]/30 flex items-center justify-center shadow-[0_0_24px_rgba(0,232,90,0.15)] group-hover:shadow-[0_0_40px_rgba(0,232,90,0.35)] transition-shadow">
+                        <step.icon className="w-5 h-5 text-[#00e85a]" />
+                      </div>
+                      <span className="font-black text-5xl text-white/5 group-hover:text-[#00e85a]/20 transition-colors leading-none">
+                        {step.n}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight mb-3">{step.title}</h3>
+                    <p className="text-white/50 text-sm sm:text-base leading-relaxed">{step.body}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Why LinkPayHub ─────────────────────────────────────────────── */}
+      <section className="relative z-10 py-24 sm:py-32 px-4 sm:px-6 lg:px-10 bg-gradient-to-b from-transparent via-[#001806]/30 to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <div className="max-w-2xl mb-14 sm:mb-20">
+              <span className="inline-block text-[11px] uppercase tracking-[0.2em] text-[#00e85a] font-semibold mb-4">
+                Why LinkPayHub
+              </span>
+              <h2 className="font-black tracking-tight text-4xl sm:text-5xl lg:text-6xl text-white leading-[1.02]">
+                Built for<br />
+                <span className="text-white/40">people who get paid.</span>
+              </h2>
+            </div>
+          </Reveal>
+
+          <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
+            {[
+              { title: "No more \"which app do you have?\"", body: "Every way to pay you, visible at once. Your payer picks their favorite — you stop losing transactions to friction." },
+              { title: "We never hold your money", body: "Payments go directly from your payer's app to yours. LinkPayHub just routes the tap. No escrow, no fees, no middlemen." },
+              { title: "Perfect for creators & small biz", body: "Streamers, stylists, trainers, freelancers, food trucks. Anyone who collects payments from multiple channels." },
+              { title: "Looks sharp everywhere you share it", body: "Branded buttons that match each payment app's real colors. Clean on mobile, in bios, on business cards, in DMs." },
+            ].map((item, i) => (
+              <Reveal key={item.title} delay={i * 80}>
+                <div className="group bg-[#0a0a0a]/80 border border-white/[0.07] hover:border-[#00e85a]/30 rounded-2xl p-6 sm:p-7 transition-colors h-full">
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-2.5 tracking-tight">{item.title}</h3>
+                  <p className="text-white/50 text-sm sm:text-base leading-relaxed">{item.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Mid-page CTA ───────────────────────────────────────────────── */}
+      <section className="relative z-10 py-20 sm:py-28 px-4 sm:px-6 lg:px-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <Reveal>
+            <h2 className="font-black tracking-tight text-4xl sm:text-6xl lg:text-7xl leading-[0.95] mb-6">
+              <span className="text-white">Your link is</span>
+              <br />
+              <span className="bg-gradient-to-r from-[#00e85a] to-[#00a83f] bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(0,232,90,0.35)]">
+                seconds away.
+              </span>
+            </h2>
+            <p className="text-white/60 text-base sm:text-lg max-w-xl mx-auto mb-8">
+              Claim your username before someone else grabs it. It's free — always.
+            </p>
+            <button
+              onClick={handleGetStarted}
+              disabled={!username}
+              className="inline-flex items-center gap-2 bg-[#00e85a] text-black px-8 py-4 rounded-full font-bold text-base sm:text-lg lph-halo hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {username ? `Claim @${username}` : "Get your free link"}
+              <ArrowRight className="w-5 h-5" />
+            </button>
+            {!username && (
+              <p className="mt-3 text-xs text-white/40">
+                Type a username in the hero up top, or start at onboarding.
               </p>
-            </div>
+            )}
+          </Reveal>
+        </div>
+      </section>
 
-            <div className="text-center space-y-3 sm:space-y-4">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-[#0d1a10] border border-[#00e85a]/20 flex items-center justify-center mb-4 sm:mb-6">
-                <Link2 className="h-7 w-7 sm:h-8 sm:w-8 text-[#00e85a]" />
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-[#00e85a]">Add your payment apps</h3>
-              <p className="text-[#00a83f] text-base sm:text-lg leading-relaxed">
-                Connect Cash App, Venmo, PayPal, Zelle, and more in seconds
-              </p>
-            </div>
+      {/* ─── FAQ ────────────────────────────────────────────────────────── */}
+      <section className="relative z-10 py-24 sm:py-32 px-4 sm:px-6 lg:px-10">
+        <div className="max-w-3xl mx-auto">
+          <Reveal>
+            <h2 className="font-black tracking-tight text-4xl sm:text-5xl lg:text-6xl text-white leading-[1.02] mb-10 sm:mb-14 text-center">
+              Questions.<br />
+              <span className="text-white/40">Straight answers.</span>
+            </h2>
+          </Reveal>
 
-            <div className="text-center space-y-3 sm:space-y-4">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-[#0d1a10] border border-[#00e85a]/20 flex items-center justify-center mb-4 sm:mb-6">
-                <Zap className="h-7 w-7 sm:h-8 sm:w-8 text-[#00e85a]" />
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-[#00e85a]">Share your link anywhere</h3>
-              <p className="text-[#00a83f] text-base sm:text-lg leading-relaxed">
-                One link to share everywhere—social media, email, or in person
-              </p>
-            </div>
+          <Reveal delay={100}>
+            <Accordion type="single" collapsible className="space-y-3">
+              <AccordionItem value="i1" className="bg-[#0a0a0a]/80 border border-white/[0.08] rounded-2xl px-5 sm:px-6 hover:border-[#00e85a]/30 transition-colors">
+                <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-white hover:no-underline py-5">
+                  Is LinkPayHub safe?
+                </AccordionTrigger>
+                <AccordionContent className="text-white/60 text-sm sm:text-base leading-relaxed pb-5">
+                  Yes. We never handle money. When someone clicks a payment option, they go directly into that platform (Cash App, Venmo, PayPal, etc.) where the transaction happens. We just route the click.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="i2" className="bg-[#0a0a0a]/80 border border-white/[0.08] rounded-2xl px-5 sm:px-6 hover:border-[#00e85a]/30 transition-colors">
+                <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-white hover:no-underline py-5">
+                  What apps can I connect?
+                </AccordionTrigger>
+                <AccordionContent className="text-white/60 text-sm sm:text-base leading-relaxed pb-5">
+                  Cash App, Venmo, PayPal, Zelle, Apple Pay, Google Pay, Bitcoin, and Stripe payment links. More coming as people ask.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="i3" className="bg-[#0a0a0a]/80 border border-white/[0.08] rounded-2xl px-5 sm:px-6 hover:border-[#00e85a]/30 transition-colors">
+                <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-white hover:no-underline py-5">
+                  Do payers see apps I don't have?
+                </AccordionTrigger>
+                <AccordionContent className="text-white/60 text-sm sm:text-base leading-relaxed pb-5">
+                  No. Only the payment methods you've added show up. If you skip Venmo, nobody sees a Venmo button.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="i4" className="bg-[#0a0a0a]/80 border border-white/[0.08] rounded-2xl px-5 sm:px-6 hover:border-[#00e85a]/30 transition-colors">
+                <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-white hover:no-underline py-5">
+                  Can I change my username later?
+                </AccordionTrigger>
+                <AccordionContent className="text-white/60 text-sm sm:text-base leading-relaxed pb-5">
+                  Your username is permanent to keep your shared links working forever. Choose carefully at signup.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="i5" className="bg-[#0a0a0a]/80 border border-white/[0.08] rounded-2xl px-5 sm:px-6 hover:border-[#00e85a]/30 transition-colors">
+                <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-white hover:no-underline py-5">
+                  Is there a fee?
+                </AccordionTrigger>
+                <AccordionContent className="text-white/60 text-sm sm:text-base leading-relaxed pb-5">
+                  No. LinkPayHub is free. Your payment apps may have their own fees (e.g., PayPal's standard rates), but we add zero on top.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ─── Footer ─────────────────────────────────────────────────────── */}
+      <footer className="relative z-10 border-t border-white/[0.06] py-10 px-4 sm:px-6 lg:px-10">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-white/40 text-sm">
+            <Image src="/linkpayhub-logo.png" alt="" width={24} height={24} className="rounded-md" />
+            <span>© 2025 LinkPayHub. Every payment, one link.</span>
           </div>
-        </div>
-      </section>
-
-      <section className="relative py-16 sm:py-20 lg:py-32 px-4 sm:px-6 bg-gradient-to-br from-[#080808] via-black to-[#050a06] z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,232,90,0.04)_0%,_transparent_70%)] pointer-events-none" />
-        <div className="max-w-5xl mx-auto relative">
-          <Card className="bg-[#0d0d0d]/90 backdrop-blur-sm p-6 sm:p-12 shadow-[0_0_60px_rgba(0,232,90,0.05)] border border-[#1a1a1a]">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6 sm:mb-8 text-center">Why LinkPayHub?</h2>
-            <div className="space-y-5 sm:space-y-6">
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#00e85a] flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4 text-black" />
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-[#00e85a] mb-1.5 sm:mb-2">{"No more asking \"Do you have...?\""}</h3>
-                  <p className="text-[#00a83f] text-base sm:text-lg leading-relaxed">
-                    Show all your payment options at once. Let people choose how they want to pay you.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#00e85a] flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4 text-black" />
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-[#00e85a] mb-1.5 sm:mb-2">Works with all major payment apps</h3>
-                  <p className="text-[#00a83f] text-base sm:text-lg leading-relaxed">
-                    Cash App, Venmo, PayPal, Zelle, Apple Pay, Google Pay, Bitcoin—connect them all.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#00e85a] flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4 text-black" />
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-[#00e85a] mb-1.5 sm:mb-2">Easy to share for anyone</h3>
-                  <p className="text-[#00a83f] text-base sm:text-lg leading-relaxed">
-                    One simple link. Share it in your bio, email signature, or anywhere you want to get paid.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#00e85a] flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-1">
-                  <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-black" />
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-[#00e85a] mb-1.5 sm:mb-2">Safe and private</h3>
-                  <p className="text-[#00a83f] text-base sm:text-lg leading-relaxed">
-                    We never handle payments. People are directed straight to your chosen platform.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </section>
-
-      <section className="relative py-16 sm:py-20 lg:py-32 px-4 sm:px-6 bg-gradient-to-t from-black via-[#050a06] to-[#080808] z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_rgba(0,168,63,0.06)_0%,_transparent_60%)] pointer-events-none" />
-        <div className="max-w-4xl mx-auto relative">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-4">Frequently asked questions</h2>
+          <div className="flex items-center gap-5 text-xs text-white/40">
+            <Link href="/login" className="hover:text-white transition">Login</Link>
+            <Link href="/onboarding" className="hover:text-white transition">Create a page</Link>
           </div>
-
-          <Accordion type="single" collapsible className="space-y-3 sm:space-y-4">
-            <AccordionItem value="item-1" className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl sm:rounded-2xl px-4 sm:px-6">
-              <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-[#00e85a] hover:no-underline py-4 sm:py-6">
-                Is LinkPayHub safe?
-              </AccordionTrigger>
-              <AccordionContent className="text-[#00a83f] text-sm sm:text-base leading-relaxed pb-4 sm:pb-6">
-                Yes! We never handle your payments directly. When someone clicks a payment option, they go straight to
-                that platform (like PayPal or Cash App) where the transaction happens securely.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-2" className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl sm:rounded-2xl px-4 sm:px-6">
-              <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-[#00e85a] hover:no-underline py-4 sm:py-6">
-                What apps can I connect?
-              </AccordionTrigger>
-              <AccordionContent className="text-[#00a83f] text-sm sm:text-base leading-relaxed pb-4 sm:pb-6">
-                You can connect any payment app—Cash App, Venmo, PayPal, Zelle, Apple Pay, Google Pay, Bitcoin wallets,
-                Stripe, and more.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-3" className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl sm:rounded-2xl px-4 sm:px-6">
-              <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-[#00e85a] hover:no-underline py-4 sm:py-6">
-                Do people see apps I don't have?
-              </AccordionTrigger>
-              <AccordionContent className="text-[#00a83f] text-sm sm:text-base leading-relaxed pb-4 sm:pb-6">
-                No! Your LinkPayHub only shows the payment methods you've added. If you don't add Venmo, visitors won't
-                see a Venmo option.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-4" className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-xl sm:rounded-2xl px-4 sm:px-6">
-              <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-[#00e85a] hover:no-underline py-4 sm:py-6">
-                Can I change my username later?
-              </AccordionTrigger>
-              <AccordionContent className="text-[#00a83f] text-sm sm:text-base leading-relaxed pb-4 sm:pb-6">
-                Your username is permanent once created to ensure link consistency. Choose carefully when setting up
-                your account.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </section>
-
-      <footer className="relative bg-gradient-to-t from-[#001a08] to-black border-t border-[#1a1a1a] py-8 sm:py-12 px-4 sm:px-6 z-10">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="text-[#00a83f] text-sm sm:text-base">© 2025 LinkPayHub. All rights reserved.</p>
         </div>
       </footer>
     </div>
