@@ -172,66 +172,58 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-[1.15fr_1fr] gap-10 sm:gap-14 lg:gap-16 items-center">
             {/* LEFT: Copy + CTA */}
             <div className="space-y-8 text-center lg:text-left">
-              <Reveal>
+              <div className="lph-enter" style={{ animationDelay: "0ms" }}>
                 <span className="inline-flex items-center gap-2 bg-[#00e85a]/[0.07] border border-[#00e85a]/30 text-[#00e85a] text-[11px] sm:text-xs font-semibold tracking-[0.15em] uppercase px-3 py-1.5 rounded-full shadow-[0_0_24px_rgba(0,232,90,0.15)]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#00e85a] shadow-[0_0_10px_rgba(0,232,90,0.9)]" />
                   No credit card · 30 sec setup
                 </span>
-              </Reveal>
+              </div>
 
-              <Reveal delay={80}>
-                <h1 className="font-black tracking-tight leading-[0.92] text-[56px] xs:text-[64px] sm:text-[88px] lg:text-[104px] xl:text-[128px]">
-                  <span className="block text-white">One link.</span>
-                  <span className="block bg-gradient-to-br from-[#00e85a] via-[#00e85a] to-[#00a83f] bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(0,232,90,0.35)]">
-                    Every payment.
+              <h1 className="lph-enter font-black tracking-[-0.03em] leading-[0.95] text-[40px] xs:text-[52px] sm:text-[80px] lg:text-[104px] xl:text-[128px]" style={{ animationDelay: "80ms" }}>
+                <span className="block text-white">One link.</span>
+                <span className="block bg-gradient-to-br from-[#00e85a] via-[#00e85a] to-[#00a83f] bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(0,232,90,0.35)]">
+                  Every payment.
+                </span>
+              </h1>
+
+              <p className="lph-enter text-base sm:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 leading-relaxed" style={{ animationDelay: "160ms" }}>
+                Stop asking "Cash App or Venmo?" Share <span className="text-white font-medium">linkpayhub.com/you</span> — every payment method you have, in one tap. No fees. No middlemen.
+              </p>
+
+              <div className="lph-enter max-w-md mx-auto lg:mx-0 space-y-3" style={{ animationDelay: "240ms" }}>
+                <div className="relative flex items-center overflow-hidden rounded-full bg-[#0a0a0a] border border-white/10 hover:border-[#00e85a]/50 transition-colors shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+                  <span className="pl-5 pr-1 py-3 sm:py-4 text-sm sm:text-base text-white/40 whitespace-nowrap font-mono">
+                    linkpayhub.com/
                   </span>
-                </h1>
-              </Reveal>
-
-              <Reveal delay={160}>
-                <p className="text-base sm:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                  Stop asking "Cash App or Venmo?" Share <span className="text-white font-medium">linkpayhub.com/you</span> — every payment method you have, in one tap. No fees. No middlemen.
+                  <input
+                    type="text"
+                    placeholder="yourname"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
+                    className="flex-1 min-w-0 bg-transparent outline-none text-white font-semibold text-base sm:text-lg placeholder:text-white/30 pr-4"
+                    aria-label="Choose your username"
+                  />
+                </div>
+                <button
+                  onClick={handleGetStarted}
+                  disabled={!username}
+                  className="group relative overflow-hidden w-full bg-[#00e85a] text-black px-7 py-4 sm:py-5 rounded-full font-bold text-base sm:text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:lph-halo-pulse enabled:hover:scale-[1.02] enabled:active:scale-[0.98] lph-shimmer"
+                >
+                  <span className="relative z-10 inline-flex items-center justify-center gap-2">
+                    Claim your link
+                    <ArrowRight className="w-5 h-5 transition-transform group-enabled:group-hover:translate-x-0.5" />
+                  </span>
+                </button>
+                <p className="text-xs text-white/40 text-center lg:text-left">
+                  No login required to start. Takes 30 seconds.
                 </p>
-              </Reveal>
+              </div>
 
-              <Reveal delay={240}>
-                <div className="max-w-md mx-auto lg:mx-0 space-y-3">
-                  <div className="relative flex items-center overflow-hidden rounded-full bg-[#0a0a0a] border border-white/10 hover:border-[#00e85a]/50 transition-colors shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
-                    <span className="pl-5 pr-1 py-3 sm:py-4 text-sm sm:text-base text-white/40 whitespace-nowrap font-mono">
-                      linkpayhub.com/
-                    </span>
-                    <input
-                      type="text"
-                      placeholder="yourname"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
-                      className="flex-1 min-w-0 bg-transparent outline-none text-white font-semibold text-base sm:text-lg placeholder:text-white/30 pr-4"
-                      aria-label="Choose your username"
-                    />
-                  </div>
-                  <button
-                    onClick={handleGetStarted}
-                    disabled={!username}
-                    className="group relative overflow-hidden w-full bg-[#00e85a] text-black px-7 py-4 sm:py-5 rounded-full font-bold text-base sm:text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:lph-halo-pulse enabled:hover:scale-[1.02] enabled:active:scale-[0.98] lph-shimmer"
-                  >
-                    <span className="relative z-10 inline-flex items-center justify-center gap-2">
-                      Claim your link
-                      <ArrowRight className="w-5 h-5 transition-transform group-enabled:group-hover:translate-x-0.5" />
-                    </span>
-                  </button>
-                  <p className="text-xs text-white/40 text-center lg:text-left">
-                    No login required to start. Takes 30 seconds.
-                  </p>
-                </div>
-              </Reveal>
-
-              <Reveal delay={320}>
-                <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.15em] font-semibold pt-2">
-                  <span className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-[#00e85a]" /> Never touches your money</span>
-                  <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-[#00e85a]" /> Instant deep links</span>
-                  <span className="flex items-center gap-1.5"><QrCode className="w-3 h-3 text-[#00e85a]" /> QR-ready</span>
-                </div>
-              </Reveal>
+              <div className="lph-enter flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.15em] font-semibold pt-2" style={{ animationDelay: "320ms" }}>
+                <span className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-[#00e85a]" /> Never touches your money</span>
+                <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-[#00e85a]" /> Instant deep links</span>
+                <span className="flex items-center gap-1.5"><QrCode className="w-3 h-3 text-[#00e85a]" /> QR-ready</span>
+              </div>
             </div>
 
             {/* RIGHT: Phone mockup */}
@@ -328,7 +320,7 @@ export default function HomePage() {
               <span className="inline-block text-[11px] uppercase tracking-[0.2em] text-[#00e85a] font-semibold mb-4">
                 How it works
               </span>
-              <h2 className="font-black tracking-tight text-4xl sm:text-5xl lg:text-6xl text-white leading-[1.02]">
+              <h2 className="font-black tracking-[-0.02em] text-[clamp(36px,7vw,64px)] text-white leading-[1.02]">
                 Three steps.<br />
                 <span className="text-white/40">Thirty seconds.</span>
               </h2>
@@ -373,7 +365,7 @@ export default function HomePage() {
               <span className="inline-block text-[11px] uppercase tracking-[0.2em] text-[#00e85a] font-semibold mb-4">
                 Why LinkPayHub
               </span>
-              <h2 className="font-black tracking-tight text-4xl sm:text-5xl lg:text-6xl text-white leading-[1.02]">
+              <h2 className="font-black tracking-[-0.02em] text-[clamp(36px,7vw,64px)] text-white leading-[1.02]">
                 Built for<br />
                 <span className="text-white/40">people who get paid.</span>
               </h2>
@@ -402,7 +394,7 @@ export default function HomePage() {
       <section className="relative z-10 py-20 sm:py-28 px-4 sm:px-6 lg:px-10">
         <div className="max-w-4xl mx-auto text-center">
           <Reveal>
-            <h2 className="font-black tracking-tight text-4xl sm:text-6xl lg:text-7xl leading-[0.95] mb-6">
+            <h2 className="font-black tracking-[-0.02em] text-[clamp(40px,9vw,84px)] leading-[0.98] mb-6">
               <span className="text-white">Your link is</span>
               <br />
               <span className="bg-gradient-to-r from-[#00e85a] to-[#00a83f] bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(0,232,90,0.35)]">
@@ -433,7 +425,7 @@ export default function HomePage() {
       <section className="relative z-10 py-24 sm:py-32 px-4 sm:px-6 lg:px-10">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <h2 className="font-black tracking-tight text-4xl sm:text-5xl lg:text-6xl text-white leading-[1.02] mb-10 sm:mb-14 text-center">
+            <h2 className="font-black tracking-[-0.02em] text-[clamp(36px,7vw,64px)] text-white leading-[1.02] mb-10 sm:mb-14 text-center">
               Questions.<br />
               <span className="text-white/40">Straight answers.</span>
             </h2>
