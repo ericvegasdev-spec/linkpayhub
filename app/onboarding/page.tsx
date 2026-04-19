@@ -6,7 +6,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 
-import { createClient } from "@supabase/supabase-js"
+import { supabase } from "@/lib/supabaseclient"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,8 +14,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowRight, Upload, User } from "lucide-react"
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 const PAYMENT_PLATFORMS = [
   { id: "paypal", name: "PayPal", placeholder: "paypal.me/yourusername or https://paypal.me/yourusername" },
@@ -98,13 +96,14 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1)
 
   const [username, setUsername] = useState("")
-  const [email, setEmail] = useState("") // stored only for claim flow later (optional)
+  const [email, setEmail] = useState("")
   const [bio, setBio] = useState("")
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null)
   const [paymentLinks, setPaymentLinks] = useState<Record<string, string>>({})
 
   const [saving, setSaving] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [awaitingEmail, setAwaitingEmail] = useState(false)
 
   useEffect(() => {
     const tempUsername = localStorage.getItem("linkpayhub_temp_username")
@@ -135,11 +134,7 @@ export default function OnboardingPage() {
   async function isUsernameTaken(u: string) {
     // relies on your "Public read profiles" policy (SELECT) that you showed
     const { data, error } = await supabase.from("profiles").select("id").eq("username", u).maybeSingle()
-    if (error) {
-      // If RLS blocks SELECT, you’ll get an error here. You DO have public read, so you should be fine.
-      console.error("[onboarding] username check error:", error)
-      return false
-    }
+    if (error) return false
     return !!data?.id
   }
 
@@ -152,6 +147,12 @@ export default function OnboardingPage() {
       return
     }
 
+    const cleanEmail = email.trim().toLowerCase()
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setErrorMsg("A valid email is required to secure your page.")
+      return
+    }
+
     if (activePaymentLinks.length === 0) {
       setErrorMsg("Add at least one payment link.")
       return
@@ -159,7 +160,6 @@ export default function OnboardingPage() {
 
     setSaving(true)
     try {
-      // 1) Prevent duplicates (recommended)
       const taken = await isUsernameTaken(cleanUsername)
       if (taken) {
         setErrorMsg("That username is taken. Try another.")
@@ -167,22 +167,22 @@ export default function OnboardingPage() {
         return
       }
 
-      // 2) Insert profile row (THIS MATCHES YOUR profiles table)
+      // Reserve the profile (unclaimed) with pending_email for later claim via magic link
       const { data: profileRow, error: profileErr } = await supabase
         .from("profiles")
         .insert({
           username: cleanUsername,
-          display_name: cleanUsername, // optional column in your table
+          display_name: cleanUsername,
           bio: bio || null,
           avatar_url: profilePhoto || null,
-          auth_user_id: null, // unclaimed until they verify later
+          auth_user_id: null,
+          pending_email: cleanEmail,
         })
         .select("id, username")
         .single()
 
       if (profileErr || !profileRow?.id) {
-        console.error("[onboarding] profiles insert failed:", profileErr)
-        setErrorMsg("Failed saving profile. Check RLS and table columns.")
+        setErrorMsg("Failed saving profile. Please try again.")
         setSaving(false)
         return
       }
@@ -192,9 +192,9 @@ export default function OnboardingPage() {
         const normalizedValue = normalizePaymentLink(platformId, value)
         return {
           profile_id: profileRow.id,
-          platform: platform?.name || platformId,
+          platform: platformId,
           label: platform?.name || null,
-          value: normalizedValue, // Now properly formatted URL
+          value: normalizedValue,
           sort_order: idx,
         }
       })
@@ -202,28 +202,82 @@ export default function OnboardingPage() {
       const { error: payErr } = await supabase.from("payment_links").insert(inserts)
 
       if (payErr) {
-        console.error("[onboarding] payment_links insert failed:", payErr)
-        setErrorMsg("Profile saved, but payment links failed. Check RLS for payment_links.")
+        setErrorMsg("Profile saved, but payment links failed to save.")
         setSaving(false)
         return
       }
 
-      // 4) Optional localStorage (fast fallback)
-      localStorage.setItem(
-        "linkpayhub_onboarding_last",
-        JSON.stringify({
-          username: cleanUsername,
-          email,
-          bio,
-          profilePhoto,
-          paymentLinks,
-        }),
-      )
+      // Send magic link so the user can claim their profile
+      const redirectBase =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        (typeof window !== "undefined" ? window.location.origin : "")
 
-      router.push(`/p?u=${cleanUsername}`)
+      const { error: otpErr } = await supabase.auth.signInWithOtp({
+        email: cleanEmail,
+        options: {
+          emailRedirectTo: `${redirectBase}/auth/callback?claim=1`,
+        },
+      })
+
+      if (otpErr) {
+        setErrorMsg(`Page created but we couldn't send your email: ${otpErr.message}. Try the login page.`)
+        setSaving(false)
+        return
+      }
+
+      localStorage.setItem("linkpayhub_claim_username", cleanUsername)
+      setAwaitingEmail(true)
     } finally {
       setSaving(false)
     }
+  }
+
+  if (awaitingEmail) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4 relative overflow-hidden">
+        <div className="fixed inset-0 bg-gradient-to-br from-black via-[#001a0a] to-black pointer-events-none" />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.1)_0%,_transparent_60%)] pointer-events-none" />
+
+        <Link href="/" className="relative z-10 flex items-center gap-3 mb-10">
+          <Image src="/linkpayhub-logo.png" alt="LinkPayHub Logo" width={56} height={56} className="rounded-xl" />
+          <span className="text-3xl font-bold text-[#00e85a] drop-shadow-[0_0_20px_rgba(0,232,90,0.4)]">LinkPayHub</span>
+        </Link>
+
+        <div className="relative z-10 max-w-lg w-full bg-[#0a0a0a]/80 backdrop-blur-sm border border-[#1a1a1a] rounded-3xl p-8 sm:p-10 text-center space-y-6">
+          <div className="mx-auto w-16 h-16 rounded-full bg-[#00e85a]/10 border border-[#00e85a]/30 flex items-center justify-center shadow-[0_0_40px_rgba(0,232,90,0.25)]">
+            <svg className="w-8 h-8 text-[#00e85a]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight">Check your email</h1>
+            <p className="text-white/60 text-base leading-relaxed">
+              We sent a magic link to <span className="text-[#00e85a] font-semibold">{email.trim().toLowerCase()}</span>. Click it to finish setup and unlock your dashboard.
+            </p>
+          </div>
+
+          <div className="bg-[#001a08] border border-[#00e85a]/20 rounded-2xl p-4 text-left text-sm text-white/70 space-y-2">
+            <p className="flex items-start gap-2">
+              <span className="text-[#00e85a] font-bold">1.</span>
+              <span>Open the email from LinkPayHub (check spam/promotions if it's not in your inbox).</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-[#00e85a] font-bold">2.</span>
+              <span>Click the link — it opens right back here on this device.</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-[#00e85a] font-bold">3.</span>
+              <span>You're in. Your page is live at <span className="font-mono text-white">linkpayhub.com/{normalizeUsername(username)}</span>.</span>
+            </p>
+          </div>
+
+          <p className="text-xs text-white/40">
+            Didn't get it? Check spam, then try again from <Link href="/login" className="text-[#00e85a] hover:underline">the login page</Link>.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -347,7 +401,7 @@ export default function OnboardingPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-base font-semibold">
-                  Email <span className="text-gray-500 font-normal">(optional)</span>
+                  Email
                 </Label>
                 <Input
                   id="email"
@@ -356,14 +410,15 @@ export default function OnboardingPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   className="h-12 text-base border border-white/10"
+                  required
                 />
-                <p className="text-xs text-gray-600">Your email will be used to claim and manage your profile in the future.</p>
+                <p className="text-xs text-gray-600">We'll email you a magic link so only you can edit your page later. No password needed.</p>
               </div>
 
               <div className="flex justify-end pt-4">
                 <Button
                   onClick={() => setStep(2)}
-                  disabled={!normalizeUsername(username)}
+                  disabled={!normalizeUsername(username) || !email.trim()}
                   className="h-12 px-8 text-base bg-blue-500 hover:bg-blue-600 rounded-full"
                 >
                   Continue <ArrowRight className="ml-2 h-5 w-5" />
