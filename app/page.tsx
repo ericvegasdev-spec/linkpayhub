@@ -17,16 +17,6 @@ export default function HomePage() {
   const [authLoading, setAuthLoading] = useState(true)
 
   useEffect(() => {
-    console.log("[v0] Homepage loaded, clearing all LinkPayHub data")
-    const keys = Object.keys(localStorage)
-    keys.forEach((key) => {
-      if (key.startsWith("linkpayhub_")) {
-        console.log("[v0] Removing localStorage key:", key)
-        localStorage.removeItem(key)
-      }
-    })
-
-    // Check current session
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession()
       setSession(data.session)
@@ -45,7 +35,6 @@ export default function HomePage() {
 
   const handleGetStarted = () => {
     if (username) {
-      console.log("[v0] Saving temp username:", username)
       localStorage.setItem("linkpayhub_temp_username", username)
     }
     router.push("/onboarding")

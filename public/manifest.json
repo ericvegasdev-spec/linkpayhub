@@ -1,0 +1,32 @@
+{
+  "name": "LinkPayHub",
+  "short_name": "LinkPayHub",
+  "description": "One link for all your payments. Cash App, Venmo, PayPal, Zelle, Apple Pay.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#00e85a",
+  "categories": ["finance", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/linkpayhub-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
