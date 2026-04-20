@@ -146,27 +146,59 @@ export function PublicProfile({ username }: { username: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#d2f77f]">
-        <p className="text-xl text-gray-900">Loading...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white relative overflow-hidden">
+        <div className="fixed inset-0 bg-gradient-to-br from-black via-[#010804] to-black pointer-events-none" aria-hidden />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.12)_0%,_transparent_60%)] pointer-events-none" aria-hidden />
+
+        {/* Top progress bar */}
+        <div className="fixed top-0 left-0 right-0 h-[3px] bg-white/5 overflow-hidden z-30">
+          <div className="absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-[#00e85a] to-transparent lph-progress-bar" />
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center gap-5">
+          <Image
+            src="/linkpayhub-logo.png"
+            alt=""
+            width={52}
+            height={52}
+            className="rounded-xl opacity-90 lph-float"
+          />
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-[11px] uppercase tracking-[0.25em] text-[#00e85a] font-semibold">
+              Loading profile
+            </p>
+            <p className="text-sm text-white/40">
+              One tap from payment, hang tight.
+            </p>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#d2f77f] p-4">
-        <Link href="/" className="flex items-center gap-3 mb-8">
-          <Image src="/linkpayhub-logo.png" alt="LinkPayHub Logo" width={56} height={56} className="rounded-xl" />
-          <span className="text-3xl font-bold text-gray-900">LinkPayHub</span>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4 relative overflow-hidden">
+        <div className="fixed inset-0 bg-gradient-to-br from-black via-[#010804] to-black pointer-events-none" aria-hidden />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.08)_0%,_transparent_60%)] pointer-events-none" aria-hidden />
+
+        <Link href="/" className="relative z-10 flex items-center gap-3 mb-8">
+          <Image src="/linkpayhub-logo.png" alt="LinkPayHub" width={48} height={48} className="rounded-xl" />
+          <span className="text-2xl font-bold text-white tracking-tight">LinkPayHub</span>
         </Link>
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center">
-            <p className="text-lg text-gray-900 mb-4">{error || "Profile not found"}</p>
-            <Link href="/">
-              <Button>Go Home</Button>
-            </Link>
-          </CardContent>
-        </Card>
+
+        <div className="relative z-10 max-w-sm w-full bg-[#0a0a0a]/80 backdrop-blur-sm border border-white/[0.08] rounded-3xl p-8 text-center space-y-4">
+          <p className="text-lg font-bold text-white">{error || "Profile not found"}</p>
+          <p className="text-sm text-white/50">
+            Double-check the link, or head back home.
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 bg-[#00e85a] text-black px-5 py-3 rounded-full font-bold text-sm hover:bg-[#00c84e] transition shadow-[0_0_30px_rgba(0,232,90,0.35)]"
+          >
+            Go home
+          </Link>
+        </div>
       </div>
     )
   }

@@ -60,12 +60,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : `Pay @${profile.username} through Cash App, Venmo, PayPal, Zelle, Apple Pay, and more — one tap.`
 
   // Social scrapers (iMessage, Twitter, etc.) can't render data: URLs — only
-  // include avatar in OG tags when it's an absolute http(s) URL.
+  // include avatar in OG tags when it's an absolute http(s) URL. Fall back to
+  // the branded logo when a real avatar isn't available so previews never show
+  // the generic browser icon.
   const usableAvatar =
-    profile.avatar_url && /^https?:\/\//i.test(profile.avatar_url) ? profile.avatar_url : null
-  const images = usableAvatar
-    ? [{ url: usableAvatar, width: 512, height: 512, alt: `@${profile.username}` }]
-    : undefined
+    profile.avatar_url && /^https?:\/\//i.test(profile.avatar_url)
+      ? profile.avatar_url
+      : `${baseUrl}/linkpayhub-logo.png`
+  const images = [
+    { url: usableAvatar, width: 512, height: 512, alt: `@${profile.username}` },
+  ]
 
   return {
     title,

@@ -170,6 +170,11 @@
   to { opacity: 1; transform: translateY(0) }
 }
 
+@keyframes lph-progress {
+  0%   { transform: translateX(-100%) }
+  100% { transform: translateX(450%) }
+}
+
 .lph-halo {
   box-shadow:
     0 0 0 1px rgba(0, 232, 90, 0.35) inset,
@@ -177,10 +182,11 @@
     0 0 72px rgba(0, 232, 90, 0.18);
 }
 
-.lph-halo-pulse { animation: lph-halo-pulse 4.5s ease-in-out infinite }
-.lph-float       { animation: lph-float 6s ease-in-out infinite }
-.lph-blob        { animation: lph-blob 18s ease-in-out infinite }
-.lph-grid-drift  { animation: lph-grid-drift 8s linear infinite alternate }
+.lph-halo-pulse   { animation: lph-halo-pulse 4.5s ease-in-out infinite }
+.lph-float        { animation: lph-float 6s ease-in-out infinite }
+.lph-blob         { animation: lph-blob 18s ease-in-out infinite }
+.lph-grid-drift   { animation: lph-grid-drift 8s linear infinite alternate }
+.lph-progress-bar { animation: lph-progress 1.4s cubic-bezier(0.4,0,0.2,1) infinite }
 
 .lph-reveal {
   opacity: 0;

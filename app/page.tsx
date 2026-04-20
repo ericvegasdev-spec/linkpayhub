@@ -53,7 +53,7 @@ function Reveal({
   )
 }
 
-// ── Subtle parallax Y based on scroll ────────────────────────────────────
+// ── Subtle parallax Y based on scroll (element-centered) ─────────────────
 function useParallax(strength = 0.15) {
   const ref = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -81,6 +81,68 @@ function useParallax(strength = 0.15) {
   return ref
 }
 
+// ── Layered scroll FX for hero elements ──────────────────────────────────
+// Each ref moves at a different rate + fades out as user scrolls away from
+// the top. Uses direct style manipulation (no re-renders) for 60fps on mobile.
+function useHeroScrollFx(refs: {
+  eyebrow: React.RefObject<HTMLElement | null>
+  headline: React.RefObject<HTMLElement | null>
+  subtitle: React.RefObject<HTMLElement | null>
+  cta: React.RefObject<HTMLElement | null>
+  chips: React.RefObject<HTMLElement | null>
+}) {
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return
+    }
+    let raf = 0
+    const tiers: Array<[
+      React.RefObject<HTMLElement | null>,
+      number, // translate multiplier (negative = moves up faster than scroll)
+      number, // fade distance (px of scroll before fully faded)
+    ]> = [
+      [refs.eyebrow, -0.45, 260],
+      [refs.headline, -0.18, 900],
+      [refs.subtitle, -0.28, 500],
+      [refs.cta, -0.12, 1100],
+      [refs.chips, -0.35, 400],
+    ]
+    const apply = () => {
+      raf = 0
+      const y = window.scrollY
+      for (const [ref, mult, fade] of tiers) {
+        const el = ref.current
+        if (!el) continue
+        if (y === 0) {
+          // let initial lph-enter CSS animation play unobstructed
+          el.style.transform = ""
+          el.style.opacity = ""
+          el.style.willChange = ""
+          continue
+        }
+        const ty = Math.max(-280, y * mult)
+        const opacity = Math.max(0, Math.min(1, 1 - y / fade))
+        el.style.transform = `translate3d(0, ${ty}px, 0)`
+        el.style.opacity = `${opacity}`
+        el.style.willChange = "transform, opacity"
+      }
+    }
+    const onScroll = () => {
+      if (raf) return
+      raf = requestAnimationFrame(apply)
+    }
+    apply()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [refs])
+}
+
 export default function HomePage() {
   const router = useRouter()
   const [username, setUsername] = useState("")
@@ -89,6 +151,20 @@ export default function HomePage() {
 
   const phoneRef = useParallax(0.08)
   const heroBlobRef = useParallax(0.05)
+
+  const eyebrowRef = useRef<HTMLSpanElement | null>(null)
+  const headlineRef = useRef<HTMLHeadingElement | null>(null)
+  const subtitleRef = useRef<HTMLParagraphElement | null>(null)
+  const ctaRef = useRef<HTMLDivElement | null>(null)
+  const chipsRef = useRef<HTMLDivElement | null>(null)
+
+  useHeroScrollFx({
+    eyebrow: eyebrowRef,
+    headline: headlineRef,
+    subtitle: subtitleRef,
+    cta: ctaRef,
+    chips: chipsRef,
+  })
 
   useEffect(() => {
     const checkSession = async () => {
@@ -172,25 +248,39 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-[1.15fr_1fr] gap-10 sm:gap-14 lg:gap-16 items-center">
             {/* LEFT: Copy + CTA */}
             <div className="space-y-8 text-center lg:text-left">
-              <div className="lph-enter" style={{ animationDelay: "0ms" }}>
-                <span className="inline-flex items-center gap-2 bg-[#00e85a]/[0.07] border border-[#00e85a]/30 text-[#00e85a] text-[11px] sm:text-xs font-semibold tracking-[0.15em] uppercase px-3 py-1.5 rounded-full shadow-[0_0_24px_rgba(0,232,90,0.15)]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00e85a] shadow-[0_0_10px_rgba(0,232,90,0.9)]" />
-                  No credit card · 30 sec setup
-                </span>
-              </div>
+              <span
+                ref={eyebrowRef}
+                className="lph-enter inline-flex items-center gap-2 bg-[#00e85a]/[0.07] border border-[#00e85a]/30 text-[#00e85a] text-[11px] sm:text-xs font-semibold tracking-[0.15em] uppercase px-3 py-1.5 rounded-full shadow-[0_0_24px_rgba(0,232,90,0.15)]"
+                style={{ animationDelay: "0ms" }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00e85a] shadow-[0_0_10px_rgba(0,232,90,0.9)]" />
+                No credit card · 30 sec setup
+              </span>
 
-              <h1 className="lph-enter font-black tracking-[-0.03em] leading-[0.95] text-[40px] xs:text-[52px] sm:text-[80px] lg:text-[104px] xl:text-[128px]" style={{ animationDelay: "80ms" }}>
+              <h1
+                ref={headlineRef}
+                className="lph-enter font-black tracking-[-0.03em] leading-[0.95] text-[40px] xs:text-[52px] sm:text-[80px] lg:text-[104px] xl:text-[128px]"
+                style={{ animationDelay: "80ms" }}
+              >
                 <span className="block text-white">One link.</span>
                 <span className="block bg-gradient-to-br from-[#00e85a] via-[#00e85a] to-[#00a83f] bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(0,232,90,0.35)]">
                   Every payment.
                 </span>
               </h1>
 
-              <p className="lph-enter text-base sm:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 leading-relaxed" style={{ animationDelay: "160ms" }}>
+              <p
+                ref={subtitleRef}
+                className="lph-enter text-base sm:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+                style={{ animationDelay: "160ms" }}
+              >
                 Stop asking "Cash App or Venmo?" Share <span className="text-white font-medium">linkpayhub.com/you</span> — every payment method you have, in one tap. No fees. No middlemen.
               </p>
 
-              <div className="lph-enter max-w-md mx-auto lg:mx-0 space-y-3" style={{ animationDelay: "240ms" }}>
+              <div
+                ref={ctaRef}
+                className="lph-enter max-w-md mx-auto lg:mx-0 space-y-3"
+                style={{ animationDelay: "240ms" }}
+              >
                 <div className="relative flex items-center overflow-hidden rounded-full bg-[#0a0a0a] border border-white/10 hover:border-[#00e85a]/50 transition-colors shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
                   <span className="pl-5 pr-1 py-3 sm:py-4 text-sm sm:text-base text-white/40 whitespace-nowrap font-mono">
                     linkpayhub.com/
@@ -219,10 +309,14 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="lph-enter flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.15em] font-semibold pt-2" style={{ animationDelay: "320ms" }}>
-                <span className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-[#00e85a]" /> Never touches your money</span>
-                <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-[#00e85a]" /> Instant deep links</span>
-                <span className="flex items-center gap-1.5"><QrCode className="w-3 h-3 text-[#00e85a]" /> QR-ready</span>
+              <div
+                ref={chipsRef}
+                className="lph-enter flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.15em] font-semibold pt-2"
+                style={{ animationDelay: "320ms" }}
+              >
+                <span className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-[#00e85a]" /> We never touch your money</span>
+                <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-[#00e85a]" /> Opens their app, one tap</span>
+                <span className="flex items-center gap-1.5"><QrCode className="w-3 h-3 text-[#00e85a]" /> Share with a QR</span>
               </div>
             </div>
 
@@ -435,10 +529,10 @@ export default function HomePage() {
             <Accordion type="single" collapsible className="space-y-3">
               <AccordionItem value="i1" className="bg-[#0a0a0a]/80 border border-white/[0.08] rounded-2xl px-5 sm:px-6 hover:border-[#00e85a]/30 transition-colors">
                 <AccordionTrigger className="text-left text-base sm:text-lg font-semibold text-white hover:no-underline py-5">
-                  Is LinkPayHub safe?
+                  What info do you store about me?
                 </AccordionTrigger>
                 <AccordionContent className="text-white/60 text-sm sm:text-base leading-relaxed pb-5">
-                  Yes. We never handle money. When someone clicks a payment option, they go directly into that platform (Cash App, Venmo, PayPal, etc.) where the transaction happens. We just route the click.
+                  Just your username, your optional email, and your payment handles (like your $cashtag or @venmo-username). Stuff you'd write on a business card. We never see passwords, card numbers, or your money — your payment apps handle all of that when your payer taps through.
                 </AccordionContent>
               </AccordionItem>
 

@@ -38,6 +38,20 @@ export const metadata: Metadata = {
     url: "https://linkpayhub.com",
     siteName: "LinkPayHub",
     type: "website",
+    images: [
+      {
+        url: "/linkpayhub-logo.png",
+        width: 512,
+        height: 512,
+        alt: "LinkPayHub",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "LinkPayHub — One Link for All Your Payments",
+    description: "Share one link. Get paid anywhere.",
+    images: ["/linkpayhub-logo.png"],
   },
 }
 
