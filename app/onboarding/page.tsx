@@ -7,7 +7,6 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 import { supabase } from "@/lib/supabaseclient"
-import { QrScanModal } from "@/components/qr-scan-modal"
 import { HelpFindUsername } from "@/components/help-find-username"
 import { QRCode } from "@/components/qr-code"
 
@@ -18,15 +17,12 @@ import {
   User,
   CheckCircle2,
   AtSign,
-  QrCode as QrIcon,
   HelpCircle,
   Copy,
   Check,
   Share2,
   Download,
 } from "lucide-react"
-
-const SCANNABLE_PLATFORMS = new Set(["paypal", "cashapp", "venmo", "bitcoin"])
 
 const PLATFORM_COLORS: Record<string, string> = {
   paypal: "#003087",
@@ -129,8 +125,7 @@ export default function OnboardingPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [awaitingEmail, setAwaitingEmail] = useState(false)
 
-  // QR / Help UI state
-  const [scanningPlatform, setScanningPlatform] = useState<string | null>(null)
+  // Help + success UI state
   const [helpPlatform, setHelpPlatform] = useState<string | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
 
@@ -158,50 +153,6 @@ export default function OnboardingPage() {
 
   const handlePaymentLinkChange = (platformId: string, value: string) => {
     setPaymentLinks((prev) => ({ ...prev, [platformId]: value }))
-  }
-
-  // Pull the raw username out of a scanned payment-app URL.
-  // normalizePaymentLink on save handles re-wrapping into the proper URL,
-  // so we just feed it the best representation we can pull out.
-  const extractUsernameFromScan = (platformId: string, raw: string): string => {
-    const v = raw.trim()
-    try {
-      switch (platformId) {
-        case "cashapp": {
-          const m = v.match(/cash\.app\/(\$?[^/?#\s]+)/i)
-          if (m) return m[1].startsWith("$") ? m[1] : "$" + m[1]
-          if (v.startsWith("$")) return v
-          return v
-        }
-        case "venmo": {
-          const m = v.match(/venmo\.com\/(?:u\/)?([^/?#\s]+)/i)
-          if (m) return "@" + m[1].replace(/^@/, "")
-          if (v.startsWith("@")) return v
-          return v
-        }
-        case "paypal": {
-          const m = v.match(/paypal\.me\/([^/?#\s]+)/i)
-          if (m) return m[1]
-          return v
-        }
-        case "bitcoin": {
-          const m = v.match(/^bitcoin:([^?&\s]+)/i)
-          if (m) return m[1]
-          return v
-        }
-        default:
-          return v
-      }
-    } catch {
-      return v
-    }
-  }
-
-  const handleQrDecoded = (value: string) => {
-    if (!scanningPlatform) return
-    const extracted = extractUsernameFromScan(scanningPlatform, value)
-    setPaymentLinks((prev) => ({ ...prev, [scanningPlatform]: extracted }))
-    setScanningPlatform(null)
   }
 
   const profileUrl =
@@ -475,17 +426,8 @@ export default function OnboardingPage() {
 
   const cleanUsername = normalizeUsername(username)
 
-  const scanningPlatformLabel =
-    PAYMENT_PLATFORMS.find((p) => p.id === scanningPlatform)?.name ?? ""
-
   return (
     <div className="min-h-screen bg-black text-white relative overflow-x-hidden">
-      <QrScanModal
-        open={!!scanningPlatform}
-        platformLabel={scanningPlatformLabel}
-        onClose={() => setScanningPlatform(null)}
-        onDecoded={handleQrDecoded}
-      />
       <HelpFindUsername
         open={!!helpPlatform}
         platformId={helpPlatform as any}
@@ -677,7 +619,6 @@ export default function OnboardingPage() {
                 {PAYMENT_PLATFORMS.map((platform) => {
                   const hasValue = !!paymentLinks[platform.id]?.trim()
                   const dotColor = PLATFORM_COLORS[platform.id] ?? "#00e85a"
-                  const canScan = SCANNABLE_PLATFORMS.has(platform.id)
                   return (
                     <div
                       key={platform.id}
@@ -707,27 +648,13 @@ export default function OnboardingPage() {
                               I don't know
                             </button>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              id={platform.id}
-                              value={paymentLinks[platform.id] || ""}
-                              onChange={(e) => handlePaymentLinkChange(platform.id, e.target.value)}
-                              placeholder={platform.placeholder}
-                              className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-[#111] border border-white/10 focus:border-[#00e85a]/50 focus:outline-none text-white placeholder:text-white/30 text-sm transition-colors"
-                            />
-                            {canScan && (
-                              <button
-                                type="button"
-                                onClick={() => setScanningPlatform(platform.id)}
-                                title="Scan your profile QR"
-                                aria-label={`Scan ${platform.name} QR code`}
-                                className="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-2 rounded-lg bg-[#00e85a]/10 border border-[#00e85a]/30 text-[#00e85a] text-[11px] font-semibold hover:bg-[#00e85a]/20 transition-colors"
-                              >
-                                <QrIcon className="w-3.5 h-3.5" />
-                                Scan
-                              </button>
-                            )}
-                          </div>
+                          <input
+                            id={platform.id}
+                            value={paymentLinks[platform.id] || ""}
+                            onChange={(e) => handlePaymentLinkChange(platform.id, e.target.value)}
+                            placeholder={platform.placeholder}
+                            className="w-full px-3 py-2 rounded-lg bg-[#111] border border-white/10 focus:border-[#00e85a]/50 focus:outline-none text-white placeholder:text-white/30 text-sm transition-colors"
+                          />
                         </div>
                       </div>
                     </div>
