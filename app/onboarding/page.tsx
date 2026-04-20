@@ -7,8 +7,26 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 import { supabase } from "@/lib/supabaseclient"
+import { QrScanModal } from "@/components/qr-scan-modal"
+import { HelpFindUsername } from "@/components/help-find-username"
+import { QRCode } from "@/components/qr-code"
 
-import { ArrowRight, ArrowLeft, Upload, User, CheckCircle2, AtSign } from "lucide-react"
+import {
+  ArrowRight,
+  ArrowLeft,
+  Upload,
+  User,
+  CheckCircle2,
+  AtSign,
+  QrCode as QrIcon,
+  HelpCircle,
+  Copy,
+  Check,
+  Share2,
+  Download,
+} from "lucide-react"
+
+const SCANNABLE_PLATFORMS = new Set(["paypal", "cashapp", "venmo", "bitcoin"])
 
 const PLATFORM_COLORS: Record<string, string> = {
   paypal: "#003087",
@@ -111,6 +129,11 @@ export default function OnboardingPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [awaitingEmail, setAwaitingEmail] = useState(false)
 
+  // QR / Help UI state
+  const [scanningPlatform, setScanningPlatform] = useState<string | null>(null)
+  const [helpPlatform, setHelpPlatform] = useState<string | null>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
+
   useEffect(() => {
     const tempUsername = localStorage.getItem("linkpayhub_temp_username")
     if (tempUsername) {
@@ -135,6 +158,120 @@ export default function OnboardingPage() {
 
   const handlePaymentLinkChange = (platformId: string, value: string) => {
     setPaymentLinks((prev) => ({ ...prev, [platformId]: value }))
+  }
+
+  // Pull the raw username out of a scanned payment-app URL.
+  // normalizePaymentLink on save handles re-wrapping into the proper URL,
+  // so we just feed it the best representation we can pull out.
+  const extractUsernameFromScan = (platformId: string, raw: string): string => {
+    const v = raw.trim()
+    try {
+      switch (platformId) {
+        case "cashapp": {
+          const m = v.match(/cash\.app\/(\$?[^/?#\s]+)/i)
+          if (m) return m[1].startsWith("$") ? m[1] : "$" + m[1]
+          if (v.startsWith("$")) return v
+          return v
+        }
+        case "venmo": {
+          const m = v.match(/venmo\.com\/(?:u\/)?([^/?#\s]+)/i)
+          if (m) return "@" + m[1].replace(/^@/, "")
+          if (v.startsWith("@")) return v
+          return v
+        }
+        case "paypal": {
+          const m = v.match(/paypal\.me\/([^/?#\s]+)/i)
+          if (m) return m[1]
+          return v
+        }
+        case "bitcoin": {
+          const m = v.match(/^bitcoin:([^?&\s]+)/i)
+          if (m) return m[1]
+          return v
+        }
+        default:
+          return v
+      }
+    } catch {
+      return v
+    }
+  }
+
+  const handleQrDecoded = (value: string) => {
+    if (!scanningPlatform) return
+    const extracted = extractUsernameFromScan(scanningPlatform, value)
+    setPaymentLinks((prev) => ({ ...prev, [scanningPlatform]: extracted }))
+    setScanningPlatform(null)
+  }
+
+  const profileUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/${normalizeUsername(username)}`
+      : `https://linkpayhub.com/${normalizeUsername(username)}`
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(profileUrl)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    } catch {}
+  }
+
+  const handleShareLink = async () => {
+    const shareData = {
+      title: "My LinkPayHub",
+      text: "Pay me through any of these apps:",
+      url: profileUrl,
+    }
+    const nav: any = typeof navigator !== "undefined" ? navigator : null
+    if (!nav) return
+    try {
+      if (typeof nav.share === "function") {
+        await nav.share(shareData)
+      } else {
+        await nav.clipboard.writeText(profileUrl)
+        setLinkCopied(true)
+        setTimeout(() => setLinkCopied(false), 2000)
+      }
+    } catch {}
+  }
+
+  const handleDownloadQr = () => {
+    const svg = document.querySelector<SVGElement>("#lph-success-qr svg")
+    const canvas = document.querySelector<HTMLCanvasElement>("#lph-success-qr canvas")
+
+    const triggerDownload = (dataUrl: string) => {
+      const a = document.createElement("a")
+      a.href = dataUrl
+      a.download = `linkpayhub-${normalizeUsername(username) || "profile"}.png`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+    }
+
+    if (canvas) {
+      triggerDownload(canvas.toDataURL("image/png"))
+      return
+    }
+    if (svg) {
+      const xml = new XMLSerializer().serializeToString(svg)
+      const blob = new Blob([xml], { type: "image/svg+xml" })
+      const url = URL.createObjectURL(blob)
+      const img = document.createElement("img")
+      img.onload = () => {
+        const c = document.createElement("canvas")
+        c.width = img.naturalWidth || 400
+        c.height = img.naturalHeight || 400
+        const ctx = c.getContext("2d")
+        if (!ctx) return
+        ctx.fillStyle = "#ffffff"
+        ctx.fillRect(0, 0, c.width, c.height)
+        ctx.drawImage(img, 0, 0)
+        triggerDownload(c.toDataURL("image/png"))
+        URL.revokeObjectURL(url)
+      }
+      img.src = url
+    }
   }
 
   async function isUsernameTaken(u: string) {
@@ -240,46 +377,96 @@ export default function OnboardingPage() {
 
   if (awaitingEmail) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4 relative overflow-hidden">
+      <div className="min-h-screen flex flex-col items-center bg-black text-white p-4 relative overflow-hidden">
         <div className="fixed inset-0 bg-gradient-to-br from-black via-[#001a0a] to-black pointer-events-none" />
-        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.1)_0%,_transparent_60%)] pointer-events-none" />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,232,90,0.14)_0%,_transparent_55%)] pointer-events-none" />
+        <div className="fixed inset-0 lph-grid opacity-[0.1] pointer-events-none" />
 
-        <Link href="/" className="relative z-10 flex items-center gap-3 mb-10">
-          <Image src="/linkpayhub-logo.png" alt="LinkPayHub Logo" width={56} height={56} className="rounded-xl" />
-          <span className="text-3xl font-bold text-[#00e85a] drop-shadow-[0_0_20px_rgba(0,232,90,0.4)]">LinkPayHub</span>
+        <Link href="/" className="relative z-10 flex items-center gap-3 mt-8 mb-8">
+          <Image src="/linkpayhub-logo.png" alt="LinkPayHub" width={48} height={48} className="rounded-xl" />
+          <span className="text-2xl font-bold text-white tracking-tight">LinkPayHub</span>
         </Link>
 
-        <div className="relative z-10 max-w-lg w-full bg-[#0a0a0a]/80 backdrop-blur-sm border border-[#1a1a1a] rounded-3xl p-8 sm:p-10 text-center space-y-6">
-          <div className="mx-auto w-16 h-16 rounded-full bg-[#00e85a]/10 border border-[#00e85a]/30 flex items-center justify-center shadow-[0_0_40px_rgba(0,232,90,0.25)]">
-            <svg className="w-8 h-8 text-[#00e85a]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
-
-          <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight">Check your email</h1>
-            <p className="text-white/60 text-base leading-relaxed">
-              We sent a magic link to <span className="text-[#00e85a] font-semibold">{email.trim().toLowerCase()}</span>. Click it to finish setup and unlock your dashboard.
+        <div className="relative z-10 max-w-md w-full space-y-5">
+          {/* Hero success card */}
+          <div className="bg-[#0a0a0a]/80 backdrop-blur-sm border border-[#00e85a]/25 rounded-3xl p-6 sm:p-8 text-center shadow-[0_30px_100px_rgba(0,232,90,0.15)]">
+            <div className="inline-flex items-center gap-1.5 bg-[#00e85a]/10 border border-[#00e85a]/30 rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] font-semibold text-[#00e85a] mb-4">
+              <CheckCircle2 className="w-3 h-3" />
+              Your page is live
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-[-0.02em] leading-[1.05] mb-2">
+              Share it.<br />
+              <span className="text-white/50">Get paid.</span>
+            </h1>
+            <p className="text-white/50 text-sm">
+              This QR opens all your payment options in one tap.
             </p>
           </div>
 
-          <div className="bg-[#001a08] border border-[#00e85a]/20 rounded-2xl p-4 text-left text-sm text-white/70 space-y-2">
-            <p className="flex items-start gap-2">
-              <span className="text-[#00e85a] font-bold">1.</span>
-              <span>Open the email from LinkPayHub (check spam/promotions if it's not in your inbox).</span>
+          {/* QR card */}
+          <div className="bg-[#0a0a0a]/80 backdrop-blur-sm border border-white/[0.08] rounded-3xl p-5 sm:p-6">
+            <div
+              id="lph-success-qr"
+              className="mx-auto bg-white rounded-2xl p-4 w-fit shadow-[0_20px_60px_rgba(0,232,90,0.18)]"
+            >
+              <QRCode value={profileUrl} size={240} />
+            </div>
+
+            <p className="text-center mt-4 text-xs uppercase tracking-[0.15em] text-white/40 font-semibold">
+              Your link
             </p>
-            <p className="flex items-start gap-2">
-              <span className="text-[#00e85a] font-bold">2.</span>
-              <span>Click the link — it opens right back here on this device.</span>
+            <p className="text-center mt-1 font-mono text-sm text-[#00e85a] break-all">
+              linkpayhub.com/{normalizeUsername(username)}
             </p>
-            <p className="flex items-start gap-2">
-              <span className="text-[#00e85a] font-bold">3.</span>
-              <span>You're in. Your page is live at <span className="font-mono text-white">linkpayhub.com/{normalizeUsername(username)}</span>.</span>
-            </p>
+
+            <div className="grid grid-cols-3 gap-2 mt-5">
+              <button
+                onClick={handleCopyLink}
+                className="flex flex-col items-center gap-1 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition"
+              >
+                {linkCopied ? (
+                  <Check className="w-4 h-4 text-[#00e85a]" />
+                ) : (
+                  <Copy className="w-4 h-4 text-white/80" />
+                )}
+                <span className="text-[11px] font-semibold text-white/80">{linkCopied ? "Copied" : "Copy"}</span>
+              </button>
+              <button
+                onClick={handleShareLink}
+                className="flex flex-col items-center gap-1 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition"
+              >
+                <Share2 className="w-4 h-4 text-white/80" />
+                <span className="text-[11px] font-semibold text-white/80">Share</span>
+              </button>
+              <button
+                onClick={handleDownloadQr}
+                className="flex flex-col items-center gap-1 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition"
+              >
+                <Download className="w-4 h-4 text-white/80" />
+                <span className="text-[11px] font-semibold text-white/80">Save QR</span>
+              </button>
+            </div>
           </div>
 
-          <p className="text-xs text-white/40">
-            Didn't get it? Check spam, then try again from <Link href="/login" className="text-[#00e85a] hover:underline">the login page</Link>.
+          {/* Email claim card */}
+          <div className="bg-[#0a0a0a]/80 backdrop-blur-sm border border-white/[0.08] rounded-3xl p-5 sm:p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#00e85a]/10 border border-[#00e85a]/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#00e85a]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-white text-sm">Check your email to edit later</p>
+                <p className="text-white/50 text-xs mt-0.5 leading-relaxed">
+                  We sent a magic link to <span className="text-white font-medium break-all">{email.trim().toLowerCase()}</span>. Click it anytime to update your payment info.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-xs text-white/30 text-center pb-8">
+            Didn't get the email? <Link href="/login" className="text-[#00e85a] hover:underline">Try from the login page</Link>.
           </p>
         </div>
       </div>
@@ -288,8 +475,22 @@ export default function OnboardingPage() {
 
   const cleanUsername = normalizeUsername(username)
 
+  const scanningPlatformLabel =
+    PAYMENT_PLATFORMS.find((p) => p.id === scanningPlatform)?.name ?? ""
+
   return (
     <div className="min-h-screen bg-black text-white relative overflow-x-hidden">
+      <QrScanModal
+        open={!!scanningPlatform}
+        platformLabel={scanningPlatformLabel}
+        onClose={() => setScanningPlatform(null)}
+        onDecoded={handleQrDecoded}
+      />
+      <HelpFindUsername
+        open={!!helpPlatform}
+        platformId={helpPlatform as any}
+        onClose={() => setHelpPlatform(null)}
+      />
       {/* Ambient background */}
       <div className="fixed inset-0 bg-gradient-to-br from-black via-[#010804] to-black pointer-events-none" aria-hidden />
       <div className="fixed inset-0 lph-grid opacity-[0.15] pointer-events-none" aria-hidden />
@@ -476,6 +677,7 @@ export default function OnboardingPage() {
                 {PAYMENT_PLATFORMS.map((platform) => {
                   const hasValue = !!paymentLinks[platform.id]?.trim()
                   const dotColor = PLATFORM_COLORS[platform.id] ?? "#00e85a"
+                  const canScan = SCANNABLE_PLATFORMS.has(platform.id)
                   return (
                     <div
                       key={platform.id}
@@ -491,17 +693,41 @@ export default function OnboardingPage() {
                           style={{ backgroundColor: dotColor, boxShadow: `0 0 16px ${dotColor}66` }}
                         />
                         <div className="flex-1 min-w-0 space-y-1.5">
-                          <div className="flex items-center gap-2">
-                            <label className="text-sm font-semibold text-white">{platform.name}</label>
-                            {hasValue && <CheckCircle2 className="w-3.5 h-3.5 text-[#00e85a]" />}
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <label className="text-sm font-semibold text-white">{platform.name}</label>
+                              {hasValue && <CheckCircle2 className="w-3.5 h-3.5 text-[#00e85a]" />}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setHelpPlatform(platform.id)}
+                              className="inline-flex items-center gap-1 text-[11px] text-white/40 hover:text-[#00e85a] transition-colors font-medium"
+                            >
+                              <HelpCircle className="w-3.5 h-3.5" />
+                              I don't know
+                            </button>
                           </div>
-                          <input
-                            id={platform.id}
-                            value={paymentLinks[platform.id] || ""}
-                            onChange={(e) => handlePaymentLinkChange(platform.id, e.target.value)}
-                            placeholder={platform.placeholder}
-                            className="w-full px-3 py-2 rounded-lg bg-[#111] border border-white/10 focus:border-[#00e85a]/50 focus:outline-none text-white placeholder:text-white/30 text-sm transition-colors"
-                          />
+                          <div className="flex items-center gap-2">
+                            <input
+                              id={platform.id}
+                              value={paymentLinks[platform.id] || ""}
+                              onChange={(e) => handlePaymentLinkChange(platform.id, e.target.value)}
+                              placeholder={platform.placeholder}
+                              className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-[#111] border border-white/10 focus:border-[#00e85a]/50 focus:outline-none text-white placeholder:text-white/30 text-sm transition-colors"
+                            />
+                            {canScan && (
+                              <button
+                                type="button"
+                                onClick={() => setScanningPlatform(platform.id)}
+                                title="Scan your profile QR"
+                                aria-label={`Scan ${platform.name} QR code`}
+                                className="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-2 rounded-lg bg-[#00e85a]/10 border border-[#00e85a]/30 text-[#00e85a] text-[11px] font-semibold hover:bg-[#00e85a]/20 transition-colors"
+                              >
+                                <QrIcon className="w-3.5 h-3.5" />
+                                Scan
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
