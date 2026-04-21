@@ -36,13 +36,15 @@ export function normalizePlatformKey(raw: string): string {
 export function PaymentIcon({
   platform,
   className = "w-5 h-5",
+  brandColor = false,
 }: {
   platform: string
   className?: string
+  brandColor?: boolean
 }) {
   const key = normalizePlatformKey(platform)
   const meta = PLATFORM_META[key]
   if (!meta) return null
   const Icon = meta.icon
-  return <Icon className={className} aria-hidden />
+  return <Icon className={className} style={brandColor ? { color: meta.color } : undefined} aria-hidden />
 }

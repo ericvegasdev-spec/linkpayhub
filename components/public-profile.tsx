@@ -201,30 +201,60 @@ export function PublicProfile({ username }: { username: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white relative overflow-hidden">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white relative overflow-hidden px-6">
         <div className="fixed inset-0 bg-gradient-to-br from-black via-[#010804] to-black pointer-events-none" aria-hidden />
-        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.12)_0%,_transparent_60%)] pointer-events-none" aria-hidden />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.14)_0%,_transparent_60%)] pointer-events-none" aria-hidden />
 
         {/* Top progress bar */}
         <div className="fixed top-0 left-0 right-0 h-[3px] bg-white/5 overflow-hidden z-30">
           <div className="absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-[#00e85a] to-transparent lph-progress-bar" />
         </div>
 
-        <div className="relative z-10 flex flex-col items-center gap-5">
-          <Image
-            src="/linkpayhub-logo.png"
-            alt=""
-            width={52}
-            height={52}
-            className="rounded-xl opacity-90 lph-float"
-          />
-          <div className="flex flex-col items-center gap-1">
-            <p className="text-[11px] uppercase tracking-[0.25em] text-[#00e85a] font-semibold">
+        <div className="relative z-10 flex flex-col items-center gap-7">
+          {/* Logo in spinning ring */}
+          <div className="relative w-36 h-36 sm:w-40 sm:h-40 flex items-center justify-center">
+            {/* Outer glow */}
+            <div className="absolute inset-0 rounded-full bg-[#00e85a]/20 blur-2xl animate-pulse" />
+            {/* Static faint ring */}
+            <div className="absolute inset-0 rounded-full border-[3px] border-[#00e85a]/15" />
+            {/* Spinning accent ring */}
+            <div
+              className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#00e85a] border-r-[#00e85a]/70 animate-spin"
+              style={{ animationDuration: "1.1s" }}
+            />
+            {/* Logo */}
+            <Image
+              src="/linkpayhub-logo.png"
+              alt="LinkPayHub"
+              width={112}
+              height={112}
+              priority
+              className="rounded-2xl relative z-10 shadow-[0_0_50px_rgba(0,232,90,0.45)] w-24 h-24 sm:w-28 sm:h-28"
+            />
+          </div>
+
+          <div className="flex flex-col items-center gap-2 text-center">
+            <p className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               Loading profile
             </p>
-            <p className="text-sm text-white/40">
-              One tap from payment, hang tight.
+            <p className="text-sm sm:text-base text-white/50">
+              One tap from payment — hang tight.
             </p>
+            {/* Animated dots */}
+            <div className="flex items-center gap-1.5 mt-2" aria-hidden>
+              <span
+                className="w-2 h-2 rounded-full bg-[#00e85a] animate-bounce"
+                style={{ animationDelay: "0ms" }}
+              />
+              <span
+                className="w-2 h-2 rounded-full bg-[#00e85a] animate-bounce"
+                style={{ animationDelay: "150ms" }}
+              />
+              <span
+                className="w-2 h-2 rounded-full bg-[#00e85a] animate-bounce"
+                style={{ animationDelay: "300ms" }}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -302,11 +332,19 @@ export function PublicProfile({ username }: { username: string }) {
                   const isApplePay = normalizedPlatform === "applepay" || normalizedPlatform === "applecash"
 
                   const btnClass =
-                    "w-full h-14 px-6 text-base font-semibold rounded-2xl shadow-md transition-all hover:shadow-lg flex items-center justify-center gap-2.5 text-white"
+                    "relative w-full h-14 px-16 text-base font-semibold rounded-2xl shadow-md transition-all hover:shadow-lg flex items-center justify-center text-white"
                   const btnStyle: React.CSSProperties = {
                     backgroundColor: style.bg,
                     boxShadow: `0 4px 16px ${style.bg}30`,
                   }
+                  const iconSize =
+                    normalizedPlatform === "venmo" ? "w-7 h-7" : "w-6 h-6"
+
+                  const IconSlot = (
+                    <span className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center justify-center">
+                      <PaymentIcon platform={link.platform} className={iconSize} />
+                    </span>
+                  )
 
                   if (isZelle) {
                     return (
@@ -320,8 +358,8 @@ export function PublicProfile({ username }: { username: string }) {
                         className={btnClass}
                         style={btnStyle}
                       >
-                        <PaymentIcon platform={link.platform} className="w-5 h-5" />
-                        {link.label || "Zelle"}
+                        {IconSlot}
+                        <span>{link.label || "Zelle"}</span>
                       </button>
                     )
                   }
@@ -338,8 +376,8 @@ export function PublicProfile({ username }: { username: string }) {
                         className={btnClass}
                         style={btnStyle}
                       >
-                        <PaymentIcon platform={link.platform} className="w-5 h-5" />
-                        {link.label || "Apple Pay"}
+                        {IconSlot}
+                        <span>{link.label || "Apple Pay"}</span>
                       </button>
                     )
                   }
@@ -353,8 +391,8 @@ export function PublicProfile({ username }: { username: string }) {
                       className={btnClass}
                       style={btnStyle}
                     >
-                      <PaymentIcon platform={link.platform} className="w-5 h-5" />
-                      {link.label || link.platform}
+                      {IconSlot}
+                      <span>{link.label || link.platform}</span>
                     </a>
                   )
                 })}

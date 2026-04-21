@@ -155,7 +155,7 @@ export default function HomePage() {
 
   const eyebrowRef = useRef<HTMLSpanElement | null>(null)
   const headlineRef = useRef<HTMLHeadingElement | null>(null)
-  const subtitleRef = useRef<HTMLParagraphElement | null>(null)
+  const subtitleRef = useRef<HTMLDivElement | null>(null)
   const ctaRef = useRef<HTMLDivElement | null>(null)
   const chipsRef = useRef<HTMLDivElement | null>(null)
 
@@ -269,31 +269,52 @@ export default function HomePage() {
                 </span>
               </h1>
 
-              <p
+              <div
                 ref={subtitleRef}
-                className="lph-enter text-base sm:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+                className="lph-enter space-y-3"
                 style={{ animationDelay: "160ms" }}
               >
-                One link. Every app they pay with. Zero fees.
-              </p>
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 sm:gap-2.5 max-w-md lg:max-w-none mx-auto lg:mx-0">
+                  {(["cashapp","venmo","paypal","zelle","applepay","googlepay","bitcoin","stripe"] as const).map((p) => (
+                    <div
+                      key={p}
+                      className="aspect-square rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center hover:border-[#00e85a]/30 transition-colors"
+                    >
+                      <PaymentIcon
+                        platform={p}
+                        brandColor
+                        className={p === "venmo" ? "w-7 h-7 sm:w-8 sm:h-8" : "w-6 h-6 sm:w-7 sm:h-7"}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 text-[11px] sm:text-xs text-white/50 font-semibold">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#00e85a]/10 border border-[#00e85a]/25 text-[#00e85a]">
+                    0% fees
+                  </span>
+                  <span className="uppercase tracking-[0.15em]">8 apps, one link</span>
+                </div>
+              </div>
 
               <div
                 ref={ctaRef}
                 className="lph-enter max-w-md mx-auto lg:mx-0 space-y-3"
                 style={{ animationDelay: "240ms" }}
               >
-                <div className="relative flex items-center overflow-hidden rounded-full bg-[#0a0a0a] border border-white/10 hover:border-[#00e85a]/50 transition-colors shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
-                  <span className="pl-5 pr-1 py-3 sm:py-4 text-sm sm:text-base text-white/40 whitespace-nowrap font-mono">
+                <div className="relative flex items-stretch overflow-hidden rounded-full bg-[#0a0a0a] border-2 border-white/10 focus-within:border-[#00e85a] hover:border-[#00e85a]/60 transition-colors shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+                  <span className="pl-5 pr-1 py-3 sm:py-4 flex items-center text-sm sm:text-base text-white/35 whitespace-nowrap font-mono">
                     linkpayhub.com/
                   </span>
-                  <input
-                    type="text"
-                    placeholder="yourname"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
-                    className="flex-1 min-w-0 bg-transparent outline-none text-white font-semibold text-base sm:text-lg placeholder:text-white/30 pr-4"
-                    aria-label="Choose your username"
-                  />
+                  <div className="relative flex-1 min-w-0 flex items-center bg-[#00e85a]/[0.04]">
+                    <input
+                      type="text"
+                      placeholder="pick your handle"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
+                      className="w-full bg-transparent outline-none text-white font-bold text-lg sm:text-2xl placeholder:text-[#00e85a]/60 placeholder:font-semibold pr-4 py-3 sm:py-4 lph-input-pulse"
+                      aria-label="Pick your handle"
+                    />
+                  </div>
                 </div>
                 <button
                   onClick={handleGetStarted}
@@ -312,12 +333,24 @@ export default function HomePage() {
 
               <div
                 ref={chipsRef}
-                className="lph-enter flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.15em] font-semibold pt-2"
+                className="lph-enter grid grid-cols-3 gap-2 sm:gap-3 max-w-md mx-auto lg:mx-0 pt-2"
                 style={{ animationDelay: "320ms" }}
               >
-                <span className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-[#00e85a]" /> We never touch your money</span>
-                <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-[#00e85a]" /> Opens their app, one tap</span>
-                <span className="flex items-center gap-1.5"><QrCode className="w-3 h-3 text-[#00e85a]" /> Share with a QR</span>
+                {[
+                  { Icon: Shield, label: "Secure" },
+                  { Icon: Zap, label: "One tap" },
+                  { Icon: QrCode, label: "QR share" },
+                ].map(({ Icon, label }) => (
+                  <div
+                    key={label}
+                    className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] py-3 px-2"
+                  >
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#00e85a]" />
+                    <span className="text-[10px] sm:text-xs text-white/60 font-semibold tracking-wide uppercase">
+                      {label}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 

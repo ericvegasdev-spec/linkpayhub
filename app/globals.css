@@ -188,6 +188,19 @@
 .lph-grid-drift   { animation: lph-grid-drift 8s linear infinite alternate }
 .lph-progress-bar { animation: lph-progress 1.4s cubic-bezier(0.4,0,0.2,1) infinite }
 
+/* Draw the eye to the username input placeholder so it reads as "type here" */
+@keyframes lph-placeholder-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+.lph-input-pulse::placeholder {
+  animation: lph-placeholder-pulse 2.2s ease-in-out infinite;
+}
+.lph-input-pulse:focus::placeholder {
+  animation: none;
+  opacity: 0.4;
+}
+
 .lph-reveal {
   opacity: 0;
   transform: translateY(28px);
@@ -234,7 +247,8 @@
   .lph-float,
   .lph-blob,
   .lph-grid-drift,
-  .lph-shimmer::before {
+  .lph-shimmer::before,
+  .lph-input-pulse::placeholder {
     animation: none !important;
   }
   .lph-reveal {
