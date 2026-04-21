@@ -245,7 +245,7 @@ export default function HomePage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-10 sm:pt-20 lg:pt-28 pb-16 sm:pb-24 lg:pb-32">
-          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-10 sm:gap-14 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 sm:gap-14 lg:gap-10 xl:gap-14 items-center">
             {/* LEFT: Copy + CTA */}
             <div className="space-y-8 text-center lg:text-left">
               <span
@@ -321,10 +321,10 @@ export default function HomePage() {
             </div>
 
             {/* RIGHT: Phone mockup */}
-            <div className="relative flex justify-center lg:justify-end">
+            <div className="relative flex justify-center">
               <div
                 ref={phoneRef}
-                className="relative w-[240px] sm:w-[300px] lg:w-[360px] xl:w-[400px] lph-float"
+                className="relative w-[260px] sm:w-[320px] lg:w-[440px] xl:w-[500px] 2xl:w-[540px] lph-float"
                 style={{ transform: "translateY(var(--parallax, 0px))" }}
               >
                 {/* Glow aura */}
