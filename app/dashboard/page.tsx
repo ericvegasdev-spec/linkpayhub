@@ -20,6 +20,7 @@ import {
   Loader2,
   Smartphone,
   X,
+  ArrowRight,
 } from "lucide-react"
 import { PaymentIcon } from "@/components/payment-icons"
 
@@ -82,6 +83,8 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [bio, setBio] = useState("")
   const [profileLoading, setProfileLoading] = useState(false)
+  const [pendingClaims, setPendingClaims] = useState<Array<{ id: string; username: string }>>([])
+  const [claimingId, setClaimingId] = useState<string | null>(null)
 
   // Avatar upload state
   const [avatarUploading, setAvatarUploading] = useState(false)
@@ -124,7 +127,7 @@ export default function DashboardPage() {
         return
       }
       setUserEmail(session.user.email ?? "")
-      await fetchData(session.user.id)
+      await fetchData(session.user.id, session.user.email ?? undefined)
       setAuthLoading(false)
     }
 
@@ -137,7 +140,7 @@ export default function DashboardPage() {
     return () => subscription.unsubscribe()
   }, [router])
 
-  const fetchData = async (uid: string) => {
+  const fetchData = async (uid: string, email?: string) => {
     setProfileLoading(true)
     try {
       const { data: userData, error: userErr } = await supabase
@@ -147,8 +150,25 @@ export default function DashboardPage() {
         .maybeSingle()
 
       if (userErr) throw userErr
-      if (!userData) throw new Error("Profile not found")
 
+      if (!userData) {
+        // No claimed profile yet — check for unclaimed profiles tied to this
+        // email (onboarding reserved a handle but the magic-link claim
+        // never completed, e.g. email rate limit or multi-handle conflict).
+        if (email) {
+          const { data: pending } = await supabase
+            .from("profiles")
+            .select("id, username")
+            .eq("pending_email", email.toLowerCase())
+            .is("auth_user_id", null)
+            .order("created_at", { ascending: false })
+          setPendingClaims(pending ?? [])
+        }
+        setProfileLoading(false)
+        return
+      }
+
+      setPendingClaims([])
       setProfile(userData)
       setBio(userData.bio ?? "")
 
@@ -285,6 +305,25 @@ export default function DashboardPage() {
     router.replace("/login")
   }
 
+  const handleClaim = async (profileId: string) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user?.id) return
+    setClaimingId(profileId)
+    setSaveError("")
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ auth_user_id: session.user.id, pending_email: null })
+        .eq("id", profileId)
+      if (error) throw error
+      await fetchData(session.user.id, session.user.email ?? undefined)
+    } catch (err: any) {
+      setSaveError(err.message || "Couldn't claim profile. If this persists, you may need to create one from onboarding.")
+    } finally {
+      setClaimingId(null)
+    }
+  }
+
   const handleCopyLink = async () => {
     if (!profile?.username) return
     await navigator.clipboard.writeText(`https://linkpayhub.com/${profile.username}`)
@@ -303,6 +342,97 @@ export default function DashboardPage() {
           <div className="w-8 h-8 border-2 border-[#00e85a] border-t-transparent rounded-full animate-spin" />
           <p className="text-[#00e85a] text-sm">Loading your dashboard...</p>
         </div>
+      </div>
+    )
+  }
+
+  // Not-claimed state: user signed in but no profile is linked yet. Show
+  // pending reservations (made via onboarding under this email) with a claim
+  // button, or a CTA to onboard from scratch if none exist.
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-black relative overflow-x-hidden">
+        <div className="fixed inset-0 bg-gradient-to-br from-black via-[#001a0a] to-black pointer-events-none" />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(0,232,90,0.07)_0%,_transparent_50%)] pointer-events-none" />
+
+        <header className="sticky top-0 z-20 bg-black/80 backdrop-blur-sm border-b border-[#1a1a1a]">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-3">
+              <Image src="/linkpayhub-logo.png" alt="LinkPayHub Logo" width={40} height={40} className="rounded-xl" />
+              <span className="text-xl font-bold text-[#00e85a] drop-shadow-[0_0_12px_rgba(0,232,90,0.3)]">LinkPayHub</span>
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition px-3 py-1.5 rounded-lg border border-[#1a1a1a] hover:border-[#333]"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          </div>
+        </header>
+
+        <main className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-5">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-1.5 bg-[#00e85a]/10 border border-[#00e85a]/30 rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] font-semibold text-[#00e85a] mb-4">
+              <Shield className="w-3 h-3" />
+              Signed in as {userEmail}
+            </div>
+            <h1 className="font-black text-3xl sm:text-4xl text-white tracking-[-0.02em] leading-tight">
+              {pendingClaims.length > 0 ? "Claim your page" : "You don't have a page yet"}
+            </h1>
+            <p className="text-white/50 text-sm mt-2">
+              {pendingClaims.length > 0
+                ? "We found unclaimed pages you reserved with this email. Pick one to own."
+                : "Create a LinkPayHub in 30 seconds."}
+            </p>
+          </div>
+
+          {pendingClaims.length > 0 ? (
+            <div className="space-y-3">
+              {pendingClaims.map((p) => (
+                <div
+                  key={p.id}
+                  className="bg-[#0a0a0a]/90 border border-[#1a1a1a] hover:border-[#00e85a]/30 rounded-2xl p-4 flex items-center gap-4 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#00e85a]/10 border border-[#00e85a]/30 flex items-center justify-center flex-shrink-0">
+                    <User className="w-5 h-5 text-[#00e85a]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-white truncate">@{p.username}</p>
+                    <p className="text-xs text-gray-500 truncate font-mono">linkpayhub.com/{p.username}</p>
+                  </div>
+                  <button
+                    onClick={() => handleClaim(p.id)}
+                    disabled={claimingId === p.id}
+                    className="inline-flex items-center gap-1.5 bg-[#fbbf24] hover:bg-[#f59e0b] disabled:opacity-60 text-black font-bold px-4 py-2 rounded-full text-xs transition-colors"
+                  >
+                    {claimingId === p.id ? (
+                      <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Claiming</>
+                    ) : (
+                      <>Claim <ArrowRight className="w-3.5 h-3.5" /></>
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="pt-2">
+            <Link
+              href="/onboarding"
+              className="block w-full text-center bg-[#00e85a] hover:bg-[#00c84e] text-black font-bold py-3 rounded-full text-sm transition-colors"
+            >
+              {pendingClaims.length > 0 ? "Or create a new page" : "Start onboarding"}
+            </Link>
+          </div>
+
+          {saveError && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-300 p-3 rounded-xl text-sm">
+              <AlertCircle className="w-4 h-4 inline mr-1.5" />
+              {saveError}
+            </div>
+          )}
+        </main>
       </div>
     )
   }

@@ -22,20 +22,31 @@ export default function AuthCallbackPage() {
 
         const { data: { session } } = await supabase.auth.getSession()
 
-        if (isClaim && session?.user?.email) {
-          setMessage("Claiming your page...")
+        if (session?.user?.email) {
+          setMessage(isClaim ? "Claiming your page..." : "Signing you in...")
 
           const email = session.user.email.toLowerCase()
 
-          // Find the unclaimed profile we reserved during onboarding
-          const { data: profile, error: fetchErr } = await supabase
+          // Prefer a username stashed during onboarding; otherwise take the
+          // most recent unclaimed profile tied to this email. maybeSingle()
+          // used to crash silently when the same email reserved several
+          // handles, so resolve the ambiguity here.
+          const stashed = (() => {
+            try { return localStorage.getItem("linkpayhub_claim_username") || null } catch { return null }
+          })()
+
+          let query = supabase
             .from("profiles")
             .select("id, username")
             .eq("pending_email", email)
             .is("auth_user_id", null)
-            .maybeSingle()
 
-          if (!fetchErr && profile?.id) {
+          if (stashed) query = query.eq("username", stashed)
+
+          const { data: candidates } = await query.order("created_at", { ascending: false }).limit(1)
+          const profile = candidates?.[0]
+
+          if (profile?.id) {
             await supabase
               .from("profiles")
               .update({ auth_user_id: session.user.id, pending_email: null })
