@@ -454,30 +454,42 @@ export function PublicProfile({ username }: { username: string }) {
               </div>
             </div>
             <div className="space-y-3">
-              <div className="flex items-start gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+              {/* Step 1 — Share button */}
+              <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
                 <div className="w-7 h-7 rounded-full bg-[#00e85a]/15 border border-[#00e85a]/30 flex items-center justify-center flex-shrink-0 text-xs font-bold text-[#00e85a]">1</div>
-                <p className="text-sm text-white/80 leading-relaxed">
-                  Tap the{" "}
-                  <span className="inline-flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-md font-semibold">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4-4 4M12 4v12" />
-                    </svg>
-                    Share
-                  </span>{" "}
-                  button at the bottom of Safari.
+                <p className="text-sm text-white/80 leading-snug flex-1">
+                  Tap the <span className="font-semibold text-white">Share</span> button at the bottom of Safari
                 </p>
+                <div className="w-10 h-10 rounded-xl bg-[#007aff]/15 border border-[#007aff]/40 flex items-center justify-center flex-shrink-0" aria-hidden>
+                  <svg className="w-5 h-5 text-[#3b9eff]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8.5 7H6.5A2.5 2.5 0 0 0 4 9.5v10A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5v-10A2.5 2.5 0 0 0 17.5 7h-2" />
+                    <path d="M12 2v13" />
+                    <path d="m7 7 5-5 5 5" />
+                  </svg>
+                </div>
               </div>
-              <div className="flex items-start gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+              {/* Step 2 — Add to Home Screen row */}
+              <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
                 <div className="w-7 h-7 rounded-full bg-[#00e85a]/15 border border-[#00e85a]/30 flex items-center justify-center flex-shrink-0 text-xs font-bold text-[#00e85a]">2</div>
-                <p className="text-sm text-white/80 leading-relaxed">
-                  Scroll and tap <span className="font-semibold text-white">Add to Home Screen</span>.
+                <p className="text-sm text-white/80 leading-snug flex-1">
+                  Scroll and tap <span className="font-semibold text-white">Add to Home Screen</span>
                 </p>
+                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0" aria-hidden>
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3.5" y="3.5" width="17" height="17" rx="3.5" />
+                    <path d="M12 8v8M8 12h8" />
+                  </svg>
+                </div>
               </div>
-              <div className="flex items-start gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+              {/* Step 3 — Add button */}
+              <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
                 <div className="w-7 h-7 rounded-full bg-[#00e85a]/15 border border-[#00e85a]/30 flex items-center justify-center flex-shrink-0 text-xs font-bold text-[#00e85a]">3</div>
-                <p className="text-sm text-white/80 leading-relaxed">
-                  Tap <span className="font-semibold text-white">Add</span> — the icon opens straight to this profile.
+                <p className="text-sm text-white/80 leading-snug flex-1">
+                  Tap <span className="font-semibold text-white">Add</span> — the icon opens straight to this profile
                 </p>
+                <div className="px-3 h-8 rounded-full bg-[#007aff] flex items-center justify-center flex-shrink-0" aria-hidden>
+                  <span className="text-white text-xs font-bold">Add</span>
+                </div>
               </div>
             </div>
             <button
