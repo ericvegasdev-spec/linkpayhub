@@ -215,7 +215,7 @@ export default function OnboardingPage() {
         c.height = img.naturalHeight || 400
         const ctx = c.getContext("2d")
         if (!ctx) return
-        ctx.fillStyle = "#ffffff"
+        ctx.fillStyle = "#0a0a0a"
         ctx.fillRect(0, 0, c.width, c.height)
         ctx.drawImage(img, 0, 0)
         triggerDownload(c.toDataURL("image/png"))
@@ -358,7 +358,7 @@ export default function OnboardingPage() {
           <div className="bg-[#0a0a0a]/80 backdrop-blur-sm border border-white/[0.08] rounded-3xl p-5 sm:p-6">
             <div
               id="lph-success-qr"
-              className="mx-auto bg-white rounded-2xl p-4 w-fit shadow-[0_20px_60px_rgba(0,232,90,0.18)]"
+              className="mx-auto bg-[#0a0a0a] rounded-2xl p-3 w-fit border border-[#00e85a]/20 shadow-[0_20px_60px_rgba(0,232,90,0.25)]"
             >
               <QRCode value={profileUrl} size={240} />
             </div>

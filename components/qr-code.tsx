@@ -18,30 +18,32 @@ export function QRCode({ value, size = 200 }: QRCodeProps) {
         width: size,
         height: size,
         data: value,
-        margin: 10,
+        margin: 16,
+        image: "/linkpayhub-logo.png",
         qrOptions: {
           typeNumber: 0,
           mode: "Byte",
-          errorCorrectionLevel: "Q",
+          errorCorrectionLevel: "H",
         },
         imageOptions: {
           hideBackgroundDots: true,
-          imageSize: 0.4,
-          margin: 5,
+          imageSize: 0.28,
+          margin: 6,
+          crossOrigin: "anonymous",
         },
         dotsOptions: {
-          color: "#000000",
+          color: "#ffffff",
           type: "rounded",
         },
         backgroundOptions: {
-          color: "#ffffff",
+          color: "#0a0a0a",
         },
         cornersSquareOptions: {
-          color: "#000000",
+          color: "#00e85a",
           type: "extra-rounded",
         },
         cornersDotOptions: {
-          color: "#000000",
+          color: "#00e85a",
           type: "dot",
         },
       })
