@@ -339,21 +339,22 @@ export default function HomePage() {
                 >
                   <div className="absolute top-2.5 lg:top-3 left-1/2 -translate-x-1/2 w-16 lg:w-24 h-5 lg:h-7 bg-black rounded-full z-20" />
 
-                  <div className="relative bg-white rounded-[2.3rem] lg:rounded-[3rem] overflow-hidden" style={{ aspectRatio: "9 / 19.5" }}>
-                    <div className="bg-white px-5 pt-7 pb-1.5">
-                      <div className="flex justify-between items-center text-[10px] font-semibold text-black">
+                  <div className="relative rounded-[2.3rem] lg:rounded-[3rem] overflow-hidden" style={{ aspectRatio: "9 / 19.5", background: "linear-gradient(180deg, #063d20 0%, #012a14 50%, #000804 100%)" }}>
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,232,90,0.25)_0%,_transparent_55%)] pointer-events-none" />
+                    <div className="relative px-5 pt-7 pb-1.5">
+                      <div className="flex justify-between items-center text-[10px] font-semibold text-white">
                         <span>9:41</span>
-                        <div className="w-3.5 h-2.5 border border-black rounded-sm relative">
-                          <div className="absolute inset-0.5 bg-black rounded-[1px]" />
+                        <div className="w-3.5 h-2.5 border border-white rounded-sm relative">
+                          <div className="absolute inset-0.5 bg-white rounded-[1px]" />
                         </div>
                       </div>
                     </div>
-                    <div className="bg-gradient-to-b from-[#F5FFF8] to-white px-5 pt-5 pb-8 text-center">
-                      <div className="w-20 h-20 mx-auto rounded-full mb-3 overflow-hidden shadow-lg ring-2 ring-white">
+                    <div className="relative px-5 pt-5 pb-8 text-center">
+                      <div className="w-20 h-20 mx-auto rounded-full mb-3 overflow-hidden ring-2 ring-white/15 shadow-[0_0_32px_rgba(0,232,90,0.35)]">
                         <Image src="/maryjane-avatar.png" alt="" width={80} height={80} className="w-full h-full object-cover" />
                       </div>
-                      <h2 className="text-lg font-bold text-[#0B0B0B] mb-0.5">@Maryjane</h2>
-                      <p className="text-[11px] text-[#5A5A5A] mb-5">Business owner · Beauty Salon</p>
+                      <h2 className="text-lg font-bold text-[#00e85a] drop-shadow-[0_0_14px_rgba(0,232,90,0.4)] mb-0.5">@Maryjane</h2>
+                      <p className="text-[11px] text-white/60 mb-5">Business owner · Beauty Salon</p>
                       <div className="space-y-2.5">
                         <div className="bg-[#00D632] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5">
                           <span>$</span> Cash App
@@ -364,7 +365,7 @@ export default function HomePage() {
                         <div className="bg-[#6D1ED4] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5">
                           <span>Z</span> Zelle
                         </div>
-                        <div className="bg-black text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5">
+                        <div className="bg-black text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5 border border-white/10">
                           <span>A</span> Apple Pay
                         </div>
                       </div>
