@@ -30,9 +30,13 @@ export default async function OGImage({ params }: Props) {
   const profile = await fetchProfile(username.toLowerCase())
 
   const handle = profile?.username || username
+  // Accept http(s) URLs AND base64 data URLs — onboarding currently stores
+  // avatars inline as data URLs because the Supabase `avatars` Storage bucket
+  // hasn't been created yet. Satori (inside ImageResponse) renders both.
+  const rawAvatar = profile?.avatar_url || ""
   const avatarUrl =
-    profile?.avatar_url && /^https?:\/\//i.test(profile.avatar_url)
-      ? profile.avatar_url
+    /^https?:\/\//i.test(rawAvatar) || rawAvatar.startsWith("data:image/")
+      ? rawAvatar
       : null
 
   return new ImageResponse(
