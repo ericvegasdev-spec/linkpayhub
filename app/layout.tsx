@@ -40,18 +40,18 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/linkpayhub-logo.png",
-        width: 512,
-        height: 512,
+        url: "/linkpayhub-wordmark.png",
+        width: 1536,
+        height: 1024,
         alt: "LinkPayHub",
       },
     ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "LinkPayHub — One Link for All Your Payments",
     description: "Share one link. Get paid anywhere.",
-    images: ["/linkpayhub-logo.png"],
+    images: ["/linkpayhub-wordmark.png"],
   },
 }
 
