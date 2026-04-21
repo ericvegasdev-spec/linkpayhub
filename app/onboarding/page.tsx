@@ -124,6 +124,7 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [awaitingEmail, setAwaitingEmail] = useState(false)
+  const [claimEmailError, setClaimEmailError] = useState<string | null>(null)
 
   // Help + success UI state
   const [helpPlatform, setHelpPlatform] = useState<string | null>(null)
@@ -313,13 +314,17 @@ export default function OnboardingPage() {
         },
       })
 
-      if (otpErr) {
-        setErrorMsg(`Page created but we couldn't send your email: ${otpErr.message}. Try the login page.`)
-        setSaving(false)
-        return
-      }
-
       localStorage.setItem("linkpayhub_claim_username", cleanUsername)
+      if (otpErr) {
+        // Email rate-limits (Supabase default is tight) are common during
+        // testing. The profile + payment links are already saved, so don't
+        // block the user — surface the failure on the success screen so they
+        // know to log in later.
+        const msg = /rate.?limit/i.test(otpErr.message)
+          ? "Too many emails sent to that address recently. Your page is live — log in later to claim edit access."
+          : otpErr.message
+        setClaimEmailError(msg)
+      }
       setAwaitingEmail(true)
     } finally {
       setSaving(false)
@@ -400,21 +405,40 @@ export default function OnboardingPage() {
           </div>
 
           {/* Email claim card */}
-          <div className="bg-[#0a0a0a]/80 backdrop-blur-sm border border-white/[0.08] rounded-3xl p-5 sm:p-6">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#00e85a]/10 border border-[#00e85a]/30 flex items-center justify-center">
-                <svg className="w-5 h-5 text-[#00e85a]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-white text-sm">Check your email to edit later</p>
-                <p className="text-white/50 text-xs mt-0.5 leading-relaxed">
-                  We sent a magic link to <span className="text-white font-medium break-all">{email.trim().toLowerCase()}</span>. Click it anytime to update your payment info.
-                </p>
+          {claimEmailError ? (
+            <div className="bg-amber-500/5 backdrop-blur-sm border border-amber-500/30 rounded-3xl p-5 sm:p-6">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-white text-sm">Couldn&apos;t send the claim email</p>
+                  <p className="text-white/60 text-xs mt-0.5 leading-relaxed">{claimEmailError}</p>
+                  <Link href="/login" className="inline-block mt-2 text-xs font-semibold text-[#00e85a] hover:underline">
+                    Go to login →
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-[#0a0a0a]/80 backdrop-blur-sm border border-white/[0.08] rounded-3xl p-5 sm:p-6">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#00e85a]/10 border border-[#00e85a]/30 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-[#00e85a]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-white text-sm">Check your email to edit later</p>
+                  <p className="text-white/50 text-xs mt-0.5 leading-relaxed">
+                    We sent a magic link to <span className="text-white font-medium break-all">{email.trim().toLowerCase()}</span>. Click it anytime to update your payment info.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <p className="text-xs text-white/30 text-center pb-8">
             Didn't get the email? <Link href="/login" className="text-[#00e85a] hover:underline">Try from the login page</Link>.
@@ -702,18 +726,18 @@ export default function OnboardingPage() {
 
               {/* Live profile preview */}
               <div className="relative">
-                <div className="absolute -inset-6 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.15)_0%,_transparent_60%)] pointer-events-none blur-xl" />
-                <div className="relative max-w-sm mx-auto bg-white rounded-[2rem] border border-white/10 overflow-hidden shadow-[0_30px_80px_rgba(0,232,90,0.12)]">
-                  <div className="px-5 pt-5 pb-7 text-center bg-gradient-to-b from-[#F5FFF8] to-white">
-                    <div className="w-16 h-16 mx-auto rounded-full mb-3 overflow-hidden shadow ring-2 ring-white bg-gray-100 flex items-center justify-center">
+                <div className="absolute -inset-6 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.18)_0%,_transparent_60%)] pointer-events-none blur-xl" />
+                <div className="relative max-w-sm mx-auto bg-[#0a0a0a]/85 backdrop-blur-sm rounded-[2rem] border border-white/[0.08] overflow-hidden shadow-[0_30px_80px_rgba(0,232,90,0.18)]">
+                  <div className="px-5 pt-6 pb-7 text-center">
+                    <div className="w-16 h-16 mx-auto rounded-full mb-3 overflow-hidden bg-white/[0.04] border border-white/10 shadow-[0_0_24px_rgba(0,232,90,0.25)] flex items-center justify-center">
                       {profilePhoto ? (
                         <img src={profilePhoto} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <User className="w-7 h-7 text-gray-400" />
+                        <User className="w-7 h-7 text-white/40" />
                       )}
                     </div>
-                    <h3 className="text-base font-bold text-[#0B0B0B] mb-0.5">@{cleanUsername}</h3>
-                    {bio && <p className="text-[11px] text-[#5A5A5A] mb-4 px-2">{bio}</p>}
+                    <h3 className="text-base font-bold text-[#00e85a] drop-shadow-[0_0_12px_rgba(0,232,90,0.35)] mb-0.5">@{cleanUsername}</h3>
+                    {bio && <p className="text-[11px] text-white/60 mb-4 px-2">{bio}</p>}
                     <div className="space-y-2 mt-4">
                       {activePaymentLinks.map(([platformId]) => {
                         const platform = PAYMENT_PLATFORMS.find((p) => p.id === platformId)
