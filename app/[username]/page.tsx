@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     manifest: `/${profile.username}/manifest.webmanifest`,
     appleWebApp: {
       capable: true,
-      title: `@${profile.username}`,
+      title: "Link Pay Hub",
       statusBarStyle: "black-translucent",
     },
     openGraph: {

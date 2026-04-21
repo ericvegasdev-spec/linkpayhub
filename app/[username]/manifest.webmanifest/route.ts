@@ -10,8 +10,8 @@ export async function GET(_req: Request, { params }: Params) {
   const handle = username.toLowerCase().replace(/[^a-z0-9]/g, "")
 
   const manifest = {
-    name: `Pay @${handle}`,
-    short_name: `@${handle}`,
+    name: "Link Pay Hub",
+    short_name: "Link Pay Hub",
     description: `Pay @${handle} through Cash App, Venmo, PayPal, Zelle, Apple Pay — one tap.`,
     start_url: `/${handle}`,
     scope: `/${handle}`,
