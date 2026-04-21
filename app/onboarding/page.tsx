@@ -172,7 +172,7 @@ export default function OnboardingPage() {
       ? `${window.location.origin}/${normalizeUsername(username)}`
       : `https://linkpayhub.com/${normalizeUsername(username)}`
 
-  // Capture Chrome/Android PWA install prompt so the "Add to Home" button
+  // Capture Chrome/Android PWA install prompt so the "Add to Phone" button
   // can trigger it. iOS Safari doesn't fire this event — we'll show a
   // visual guide on those devices instead.
   useEffect(() => {
@@ -439,7 +439,7 @@ export default function OnboardingPage() {
                 className="flex flex-col items-center gap-1 py-3 rounded-2xl bg-[#00e85a]/10 border border-[#00e85a]/30 hover:bg-[#00e85a]/15 hover:border-[#00e85a]/50 transition"
               >
                 <Smartphone className="w-4 h-4 text-[#00e85a]" />
-                <span className="text-[11px] font-semibold text-[#00e85a]">Add to Home</span>
+                <span className="text-[11px] font-semibold text-[#00e85a]">Add to Phone</span>
               </button>
             </div>
           </div>
@@ -551,7 +551,7 @@ export default function OnboardingPage() {
                   <Smartphone className="w-6 h-6 text-[#00e85a]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white leading-tight">Add to Home Screen</h3>
+                  <h3 className="text-lg font-bold text-white leading-tight">Add to Phone</h3>
                   <p className="text-xs text-white/50 mt-0.5">One tap to open your pay page</p>
                 </div>
               </div>

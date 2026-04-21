@@ -377,7 +377,7 @@ export function PublicProfile({ username }: { username: string }) {
                 className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-full bg-[#00e85a]/10 border border-[#00e85a]/30 hover:bg-[#00e85a]/15 hover:border-[#00e85a]/50 transition text-[13px] font-semibold text-[#00e85a]"
               >
                 <Smartphone className="w-4 h-4" />
-                Save to Home
+                Add to Phone
               </button>
             </div>
           </CardContent>
@@ -450,7 +450,7 @@ export function PublicProfile({ username }: { username: string }) {
                 <Smartphone className="w-6 h-6 text-[#00e85a]" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white leading-tight">Save to Home Screen</h3>
+                <h3 className="text-lg font-bold text-white leading-tight">Add to Phone</h3>
                 <p className="text-xs text-white/50 mt-0.5">One tap to pay @{profile?.username}</p>
               </div>
             </div>

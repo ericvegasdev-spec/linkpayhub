@@ -18,7 +18,15 @@ import {
   Link2,
   Camera,
   Loader2,
+  Smartphone,
+  X,
 } from "lucide-react"
+import { PaymentIcon } from "@/components/payment-icons"
+
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>
+}
 
 const PAYMENT_PLATFORMS = [
   { key: "paypal",    label: "PayPal",     placeholder: "paypal.me/yourusername",      color: "#003087", hint: "Enter paypal.me/username or full URL" },
@@ -86,6 +94,27 @@ export default function DashboardPage() {
 
   // UI state
   const [copied, setCopied] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null)
+  const [installOpen, setInstallOpen] = useState(false)
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault()
+      setInstallPrompt(e as InstallPromptEvent)
+    }
+    window.addEventListener("beforeinstallprompt", handler)
+    return () => window.removeEventListener("beforeinstallprompt", handler)
+  }, [])
+
+  const handleAddToPhone = async () => {
+    if (installPrompt) {
+      await installPrompt.prompt()
+      const { outcome } = await installPrompt.userChoice
+      if (outcome === "accepted") setInstallPrompt(null)
+      return
+    }
+    setInstallOpen(true)
+  }
 
   useEffect(() => {
     const init = async () => {
@@ -366,6 +395,24 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Add to Phone CTA — saves an icon that opens the dashboard like a native app */}
+        <button
+          type="button"
+          onClick={handleAddToPhone}
+          className="group w-full bg-gradient-to-r from-[#fbbf24]/[0.08] to-[#00e85a]/[0.04] hover:from-[#fbbf24]/[0.12] border border-[#fbbf24]/30 hover:border-[#fbbf24]/50 rounded-2xl p-5 flex items-center gap-4 text-left transition-all"
+        >
+          <div className="w-11 h-11 rounded-xl bg-[#fbbf24]/15 border border-[#fbbf24]/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+            <Smartphone className="w-5 h-5 text-[#fbbf24]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-white text-sm">Add to Phone</p>
+            <p className="text-xs text-white/50 mt-0.5 leading-snug">
+              One-tap dashboard access, like a real app. The icon opens straight here to edit your page.
+            </p>
+          </div>
+          <div className="flex-shrink-0 text-xs font-bold text-[#fbbf24] uppercase tracking-wider pr-1">Install</div>
+        </button>
+
         <form onSubmit={handleSave} className="space-y-6">
           {/* Bio editor */}
           <div className="bg-[#0a0a0a]/90 border border-[#1a1a1a] rounded-2xl p-5 sm:p-6">
@@ -406,9 +453,11 @@ export default function DashboardPage() {
                     className={`px-5 sm:px-6 py-4 flex items-start gap-4 transition-colors ${hasValue ? "bg-[#00e85a]/[0.02]" : ""}`}
                   >
                     <div
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-3.5"
+                      className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center mt-1 text-white"
                       style={{ backgroundColor: platform.color }}
-                    />
+                    >
+                      <PaymentIcon platform={platform.key} className="w-4 h-4" />
+                    </div>
                     <div className="flex-1 min-w-0 space-y-1.5">
                       <div className="flex items-center gap-2">
                         <label className="text-sm font-semibold text-white">{platform.label}</label>
@@ -485,6 +534,78 @@ export default function DashboardPage() {
         </div>
 
       </main>
+
+      {/* Add-to-Phone iOS Safari instructions modal */}
+      {installOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setInstallOpen(false)}
+        >
+          <div
+            className="relative max-w-sm w-full bg-[#0a0a0a] border border-[#fbbf24]/30 rounded-3xl p-6 shadow-[0_30px_100px_rgba(251,191,36,0.2)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setInstallOpen(false)}
+              aria-label="Close"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center"
+            >
+              <X className="w-4 h-4 text-white/70" />
+            </button>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-[#fbbf24]/15 border border-[#fbbf24]/30 flex items-center justify-center flex-shrink-0">
+                <Smartphone className="w-6 h-6 text-[#fbbf24]" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white leading-tight">Add to Phone</h3>
+                <p className="text-xs text-white/50 mt-0.5">Open your dashboard like an app</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+                <div className="w-7 h-7 rounded-full bg-[#fbbf24]/15 border border-[#fbbf24]/30 flex items-center justify-center flex-shrink-0 text-xs font-bold text-[#fbbf24]">1</div>
+                <p className="text-sm text-white/80 leading-snug flex-1">
+                  Tap the <span className="font-semibold text-white">Share</span> button at the bottom of Safari
+                </p>
+                <div className="w-10 h-10 rounded-xl bg-[#007aff]/15 border border-[#007aff]/40 flex items-center justify-center flex-shrink-0" aria-hidden>
+                  <svg className="w-5 h-5 text-[#3b9eff]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8.5 7H6.5A2.5 2.5 0 0 0 4 9.5v10A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5v-10A2.5 2.5 0 0 0 17.5 7h-2" />
+                    <path d="M12 2v13" />
+                    <path d="m7 7 5-5 5 5" />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+                <div className="w-7 h-7 rounded-full bg-[#fbbf24]/15 border border-[#fbbf24]/30 flex items-center justify-center flex-shrink-0 text-xs font-bold text-[#fbbf24]">2</div>
+                <p className="text-sm text-white/80 leading-snug flex-1">
+                  Scroll and tap <span className="font-semibold text-white">Add to Home Screen</span>
+                </p>
+                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0" aria-hidden>
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3.5" y="3.5" width="17" height="17" rx="3.5" />
+                    <path d="M12 8v8M8 12h8" />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+                <div className="w-7 h-7 rounded-full bg-[#fbbf24]/15 border border-[#fbbf24]/30 flex items-center justify-center flex-shrink-0 text-xs font-bold text-[#fbbf24]">3</div>
+                <p className="text-sm text-white/80 leading-snug flex-1">
+                  Tap <span className="font-semibold text-white">Add</span> — the icon opens straight to your dashboard
+                </p>
+                <div className="px-3 h-8 rounded-full bg-[#007aff] flex items-center justify-center flex-shrink-0" aria-hidden>
+                  <span className="text-white text-xs font-bold">Add</span>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setInstallOpen(false)}
+              className="mt-5 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold py-3 rounded-full text-sm transition"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
