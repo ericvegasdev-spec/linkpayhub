@@ -204,19 +204,22 @@ export function PublicProfile({ username }: { username: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#d2f77f] p-4 py-12">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-black text-white p-4 py-12 relative overflow-hidden">
+      <div className="fixed inset-0 bg-gradient-to-br from-black via-[#010804] to-black pointer-events-none" aria-hidden />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.12)_0%,_transparent_60%)] pointer-events-none" aria-hidden />
+
+      <div className="relative z-10 max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-8">
             <Image src="/linkpayhub-logo.png" alt="LinkPayHub Logo" width={48} height={48} className="rounded-xl" />
-            <span className="text-2xl font-bold text-gray-900">LinkPayHub</span>
+            <span className="text-2xl font-bold text-white tracking-tight">LinkPayHub</span>
           </Link>
         </div>
 
-        <Card className="shadow-2xl border-4 border-black rounded-3xl mb-6 max-w-md mx-auto">
+        <Card className="bg-[#0a0a0a]/80 backdrop-blur-sm border border-white/[0.08] shadow-[0_0_60px_rgba(0,232,90,0.08)] rounded-3xl mb-6 max-w-md mx-auto">
           <CardContent className="pt-12 pb-8 px-8">
             <div className="flex flex-col items-center text-center mb-8">
-              <div className="h-32 w-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mb-4 border-4 border-white shadow-lg">
+              <div className="h-32 w-32 rounded-full bg-white/[0.04] flex items-center justify-center overflow-hidden mb-4 border border-white/10 shadow-[0_0_40px_rgba(0,232,90,0.25)]">
                 {profile.avatar_url ? (
                   <img
                     src={profile.avatar_url}
@@ -224,13 +227,13 @@ export function PublicProfile({ username }: { username: string }) {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <User className="h-16 w-16 text-gray-400" />
+                  <User className="h-16 w-16 text-white/40" />
                 )}
               </div>
 
-              <h1 className="text-2xl font-bold text-[#00e85a] mb-1">@{profile.username}</h1>
+              <h1 className="text-2xl font-bold text-[#00e85a] drop-shadow-[0_0_20px_rgba(0,232,90,0.35)] mb-1">@{profile.username}</h1>
 
-              {profile.bio && <p className="text-sm text-gray-600 max-w-md mt-2">{profile.bio}</p>}
+              {profile.bio && <p className="text-sm text-white/60 max-w-md mt-2">{profile.bio}</p>}
             </div>
 
             {paymentLinks.length > 0 ? (
@@ -291,7 +294,7 @@ export function PublicProfile({ username }: { username: string }) {
                 })}
               </div>
             ) : (
-              <p className="text-gray-600">No payment links available.</p>
+              <p className="text-white/60">No payment links available.</p>
             )}
           </CardContent>
         </Card>
