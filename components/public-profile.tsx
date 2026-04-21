@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { supabase } from "@/lib/supabaseclient"
 import { QRCode } from "@/components/qr-code"
+import { PaymentIcon, PLATFORM_META, normalizePlatformKey } from "@/components/payment-icons"
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>
@@ -30,24 +31,14 @@ interface PaymentLink {
   sort_order: number
 }
 
-const platformStyles: Record<string, { bg: string; hover: string; text: string; icon: string }> = {
-  paypal: { bg: "bg-[#003087]", hover: "hover:bg-[#002870]", text: "text-white", icon: "₱" },
-  cashapp: { bg: "bg-[#00D632]", hover: "hover:bg-[#00C02E]", text: "text-white", icon: "$" },
-  venmo: { bg: "bg-[#3D95CE]", hover: "hover:bg-[#3487BD]", text: "text-white", icon: "V" },
-  applepay: { bg: "bg-black", hover: "hover:bg-gray-900", text: "text-white", icon: "" },
-  zelle: { bg: "bg-[#6D1ED4]", hover: "hover:bg-[#5D1AB8]", text: "text-white", icon: "Z" },
-}
-
 function getPlatformStyle(platform: string) {
-  const normalized = platform.toLowerCase().replace(/\s+/g, "")
-  return (
-    platformStyles[normalized] || {
-      bg: "bg-gray-800",
-      hover: "hover:bg-gray-700",
-      text: "text-white",
-      icon: "💳",
-    }
-  )
+  const key = normalizePlatformKey(platform)
+  const meta = PLATFORM_META[key]
+  return {
+    bg: meta?.color ?? "#1a1a1a",
+    hover: meta?.hover ?? "#2a2a2a",
+    name: meta?.name ?? platform,
+  }
 }
 
 function getDeepLink(platform: string, value: string): string {
@@ -310,6 +301,13 @@ export function PublicProfile({ username }: { username: string }) {
                   const isZelle = normalizedPlatform === "zelle"
                   const isApplePay = normalizedPlatform === "applepay" || normalizedPlatform === "applecash"
 
+                  const btnClass =
+                    "w-full h-14 px-6 text-base font-semibold rounded-2xl shadow-md transition-all hover:shadow-lg flex items-center justify-center gap-2.5 text-white"
+                  const btnStyle: React.CSSProperties = {
+                    backgroundColor: style.bg,
+                    boxShadow: `0 4px 16px ${style.bg}30`,
+                  }
+
                   if (isZelle) {
                     return (
                       <button
@@ -319,9 +317,10 @@ export function PublicProfile({ username }: { username: string }) {
                           await navigator.clipboard.writeText(link.value)
                           alert("Zelle info copied. Open your bank app → Zelle → Paste → Send.")
                         }}
-                        className={`w-full h-14 px-6 text-base font-semibold rounded-2xl shadow-md transition-all hover:shadow-lg flex items-center justify-center gap-2 ${style.bg} ${style.hover} ${style.text}`}
+                        className={btnClass}
+                        style={btnStyle}
                       >
-                        {style.icon && <span className="text-xl font-bold">{style.icon}</span>}
+                        <PaymentIcon platform={link.platform} className="w-5 h-5" />
                         {link.label || "Zelle"}
                       </button>
                     )
@@ -336,9 +335,10 @@ export function PublicProfile({ username }: { username: string }) {
                           await navigator.clipboard.writeText(link.value)
                           alert("Apple Pay info copied. Open Wallet → Apple Cash → Send → Paste → Send.")
                         }}
-                        className={`w-full h-14 px-6 text-base font-semibold rounded-2xl shadow-md transition-all hover:shadow-lg flex items-center justify-center gap-2 ${style.bg} ${style.hover} ${style.text}`}
+                        className={btnClass}
+                        style={btnStyle}
                       >
-                        {style.icon && <span className="text-xl font-bold">{style.icon}</span>}
+                        <PaymentIcon platform={link.platform} className="w-5 h-5" />
                         {link.label || "Apple Pay"}
                       </button>
                     )
@@ -350,9 +350,10 @@ export function PublicProfile({ username }: { username: string }) {
                       href={linkUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-full h-14 px-6 text-base font-semibold rounded-2xl shadow-md transition-all hover:shadow-lg flex items-center justify-center gap-2 ${style.bg} ${style.hover} ${style.text}`}
+                      className={btnClass}
+                      style={btnStyle}
                     >
-                      {style.icon && <span className="text-xl font-bold">{style.icon}</span>}
+                      <PaymentIcon platform={link.platform} className="w-5 h-5" />
                       {link.label || link.platform}
                     </a>
                   )

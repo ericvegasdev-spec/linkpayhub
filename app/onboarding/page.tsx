@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseclient"
 import { HelpFindUsername } from "@/components/help-find-username"
 import { QRCode } from "@/components/qr-code"
+import { PaymentIcon } from "@/components/payment-icons"
 
 import {
   ArrowRight,
@@ -902,9 +903,10 @@ export default function OnboardingPage() {
                         return (
                           <div
                             key={platformId}
-                            className="py-2.5 px-3 rounded-full font-semibold text-xs text-white shadow flex items-center justify-center"
+                            className="py-2.5 px-3 rounded-full font-semibold text-xs text-white shadow flex items-center justify-center gap-2"
                             style={{ backgroundColor: color }}
                           >
+                            <PaymentIcon platform={platformId} className="w-3.5 h-3.5" />
                             {platform?.name}
                           </div>
                         )

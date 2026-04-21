@@ -6,6 +6,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Shield, Link2, Zap, ArrowRight, QrCode, Sparkles, Eye, Lock, Heart, Palette } from "lucide-react"
+import { PaymentIcon } from "@/components/payment-icons"
 import { supabase } from "@/lib/supabaseclient"
 import { Session } from "@supabase/supabase-js"
 
@@ -356,17 +357,17 @@ export default function HomePage() {
                       <h2 className="text-lg font-bold text-[#00e85a] drop-shadow-[0_0_14px_rgba(0,232,90,0.4)] mb-0.5">@Maryjane</h2>
                       <p className="text-[11px] text-white/60 mb-5">Business owner · Beauty Salon</p>
                       <div className="space-y-2.5">
-                        <div className="bg-[#00D632] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5">
-                          <span>$</span> Cash App
+                        <div className="bg-[#00D632] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-2">
+                          <PaymentIcon platform="cashapp" className="w-3.5 h-3.5" /> Cash App
                         </div>
-                        <div className="bg-[#008CFF] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5">
-                          <span>V</span> Venmo
+                        <div className="bg-[#008CFF] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-2">
+                          <PaymentIcon platform="venmo" className="w-3.5 h-3.5" /> Venmo
                         </div>
-                        <div className="bg-[#6D1ED4] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5">
-                          <span>Z</span> Zelle
+                        <div className="bg-[#6D1ED4] text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-2">
+                          <PaymentIcon platform="zelle" className="w-3.5 h-3.5" /> Zelle
                         </div>
-                        <div className="bg-black text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-1.5 border border-white/10">
-                          <span>A</span> Apple Pay
+                        <div className="bg-black text-white py-3 px-3 rounded-full font-semibold text-xs shadow-md flex items-center justify-center gap-2 border border-white/10">
+                          <PaymentIcon platform="applepay" className="w-3.5 h-3.5" /> Apple Pay
                         </div>
                       </div>
                     </div>
