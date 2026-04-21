@@ -186,6 +186,21 @@ export default function DashboardPage() {
     setAvatarUploading(true)
     setSaveError("")
 
+    // Try Supabase Storage first; if the bucket isn't set up yet, fall back
+    // to a base64 data URL so the upload still works (same fallback the
+    // onboarding flow uses). Warn via setSaveError so the owner knows to
+    // eventually create the bucket for performance.
+    const saveUrl = async (url: string) => {
+      const { error: updateErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("id", profile.id)
+      if (updateErr) throw updateErr
+      setProfile({ ...profile, avatar_url: url })
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000)
+    }
+
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg"
       const path = `${profile.id}/avatar-${Date.now()}.${ext}`
@@ -197,20 +212,21 @@ export default function DashboardPage() {
       if (uploadErr) throw uploadErr
 
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path)
-      const url = pub.publicUrl
-
-      const { error: updateErr } = await supabase
-        .from("profiles")
-        .update({ avatar_url: url })
-        .eq("id", profile.id)
-
-      if (updateErr) throw updateErr
-
-      setProfile({ ...profile, avatar_url: url })
-      setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3000)
+      await saveUrl(pub.publicUrl)
     } catch (err: any) {
-      setSaveError(err.message || "Photo upload failed. Does your Supabase project have a public 'avatars' storage bucket?")
+      // Bucket not set up or upload failed — fall back to inline base64.
+      try {
+        const dataUrl: string = await new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+        await saveUrl(dataUrl)
+        console.warn("Avatar stored inline as base64 (Supabase Storage fallback). Create the public 'avatars' bucket in Supabase for better performance.")
+      } catch (fallbackErr: any) {
+        setSaveError(fallbackErr.message || err.message || "Photo upload failed.")
+      }
     } finally {
       setAvatarUploading(false)
     }
@@ -307,7 +323,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             {profile?.username && (
               <Link
-                href={`/p?u=${profile.username}`}
+                href={`/${profile.username}`}
                 target="_blank"
                 className="hidden sm:inline-flex items-center gap-1.5 text-sm text-[#00e85a] font-medium hover:underline"
               >
