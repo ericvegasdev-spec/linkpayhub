@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Shield, Link2, Zap, ArrowRight, QrCode, Sparkles } from "lucide-react"
+import { Shield, Link2, Zap, ArrowRight, QrCode, Sparkles, Eye, Lock, Heart, Palette } from "lucide-react"
 import { supabase } from "@/lib/supabaseclient"
 import { Session } from "@supabase/supabase-js"
 
@@ -273,7 +273,7 @@ export default function HomePage() {
                 className="lph-enter text-base sm:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 leading-relaxed"
                 style={{ animationDelay: "160ms" }}
               >
-                Stop asking "Cash App or Venmo?" Share <span className="text-white font-medium">linkpayhub.com/you</span> — every payment method you have, in one tap. No fees. No middlemen.
+                One link. Every app they pay with. Zero fees.
               </p>
 
               <div
@@ -297,7 +297,7 @@ export default function HomePage() {
                 <button
                   onClick={handleGetStarted}
                   disabled={!username}
-                  className="group relative overflow-hidden w-full bg-[#00e85a] text-black px-7 py-4 sm:py-5 rounded-full font-bold text-base sm:text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:lph-halo-pulse enabled:hover:scale-[1.02] enabled:active:scale-[0.98] lph-shimmer"
+                  className="group relative overflow-hidden w-full bg-[#fbbf24] hover:bg-[#f59e0b] text-black px-7 py-4 sm:py-5 rounded-full font-bold text-base sm:text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:hover:scale-[1.02] enabled:active:scale-[0.98] shadow-[0_10px_40px_rgba(251,191,36,0.35)] enabled:hover:shadow-[0_15px_50px_rgba(251,191,36,0.5)]"
                 >
                   <span className="relative z-10 inline-flex items-center justify-center gap-2">
                     Claim your link
@@ -452,9 +452,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Why LinkPayHub ─────────────────────────────────────────────── */}
-      <section className="relative z-10 py-24 sm:py-32 px-4 sm:px-6 lg:px-10 bg-gradient-to-b from-transparent via-[#001806]/30 to-transparent">
-        <div className="max-w-6xl mx-auto">
+      {/* ─── Why LinkPayHub — iconified, lighter grid ─────────────────────── */}
+      <section className="relative z-10 py-24 sm:py-32 px-4 sm:px-6 lg:px-10 bg-gradient-to-b from-transparent via-[#001806]/25 to-transparent">
+        {/* Subtle warm corner glow to break up the page rhythm */}
+        <div className="absolute top-20 right-0 w-[600px] h-[600px] max-w-[80vw] max-h-[80vw] pointer-events-none opacity-60" aria-hidden>
+          <div className="w-full h-full bg-[radial-gradient(circle,_rgba(251,191,36,0.08)_0%,_transparent_60%)]" />
+        </div>
+
+        <div className="relative max-w-6xl mx-auto">
           <Reveal>
             <div className="max-w-2xl mb-14 sm:mb-20">
               <span className="inline-block text-[11px] uppercase tracking-[0.2em] text-[#00e85a] font-semibold mb-4">
@@ -467,17 +472,20 @@ export default function HomePage() {
             </div>
           </Reveal>
 
-          <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { title: "No more \"which app do you have?\"", body: "Every way to pay you, visible at once. Your payer picks their favorite — you stop losing transactions to friction." },
-              { title: "We never hold your money", body: "Payments go directly from your payer's app to yours. LinkPayHub just routes the tap. No escrow, no fees, no middlemen." },
-              { title: "Perfect for creators & small biz", body: "Streamers, stylists, trainers, freelancers, food trucks. Anyone who collects payments from multiple channels." },
-              { title: "Looks sharp everywhere you share it", body: "Branded buttons that match each payment app's real colors. Clean on mobile, in bios, on business cards, in DMs." },
+              { icon: Eye, title: "All options, one view", body: "Payer picks their app." },
+              { icon: Lock, title: "We don't touch money", body: "Direct to your app." },
+              { icon: Heart, title: "Made for creators", body: "Streamers, biz, freelancers." },
+              { icon: Palette, title: "Looks sharp anywhere", body: "Branded on every share." },
             ].map((item, i) => (
               <Reveal key={item.title} delay={i * 80}>
-                <div className="group bg-[#0a0a0a]/80 border border-white/[0.07] hover:border-[#00e85a]/30 rounded-2xl p-6 sm:p-7 transition-colors h-full">
-                  <h3 className="text-lg sm:text-xl font-bold text-white mb-2.5 tracking-tight">{item.title}</h3>
-                  <p className="text-white/50 text-sm sm:text-base leading-relaxed">{item.body}</p>
+                <div className="group bg-[#0a0a0a]/60 border border-white/[0.06] hover:border-[#00e85a]/30 rounded-2xl p-6 transition-all hover:-translate-y-0.5 h-full">
+                  <div className="w-10 h-10 rounded-xl bg-[#00e85a]/10 border border-[#00e85a]/25 flex items-center justify-center mb-4 group-hover:shadow-[0_0_24px_rgba(0,232,90,0.3)] transition-shadow">
+                    <item.icon className="w-5 h-5 text-[#00e85a]" />
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-1.5 tracking-tight">{item.title}</h3>
+                  <p className="text-white/50 text-sm leading-snug">{item.body}</p>
                 </div>
               </Reveal>
             ))}
@@ -485,9 +493,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Mid-page CTA ───────────────────────────────────────────────── */}
-      <section className="relative z-10 py-20 sm:py-28 px-4 sm:px-6 lg:px-10">
-        <div className="max-w-4xl mx-auto text-center">
+      {/* ─── Mid-page CTA — warm spotlight band for contrast ─────────────── */}
+      <section className="relative z-10 py-20 sm:py-28 px-4 sm:px-6 lg:px-10 overflow-hidden">
+        {/* Warm amber glow to make this CTA zone pop from the surrounding dark */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[600px] max-w-[140vw] bg-[radial-gradient(ellipse,_rgba(251,191,36,0.12)_0%,_transparent_60%)]" />
+        </div>
+        <div className="relative max-w-4xl mx-auto text-center">
           <Reveal>
             <h2 className="font-black tracking-[-0.02em] text-[clamp(40px,9vw,84px)] leading-[0.98] mb-6">
               <span className="text-white">Your link is</span>
@@ -502,7 +514,7 @@ export default function HomePage() {
             <button
               onClick={handleGetStarted}
               disabled={!username}
-              className="inline-flex items-center gap-2 bg-[#00e85a] text-black px-8 py-4 rounded-full font-bold text-base sm:text-lg lph-halo hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 bg-[#fbbf24] hover:bg-[#f59e0b] text-black px-8 py-4 rounded-full font-bold text-base sm:text-lg shadow-[0_15px_50px_rgba(251,191,36,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {username ? `Claim @${username}` : "Get your free link"}
               <ArrowRight className="w-5 h-5" />
