@@ -3,10 +3,16 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { User } from "lucide-react"
+import { User, QrCode, Smartphone, X, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { supabase } from "@/lib/supabaseclient"
+import { QRCode } from "@/components/qr-code"
+
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>
+}
 
 interface Profile {
   id: string
@@ -97,6 +103,9 @@ export function PublicProfile({ username }: { username: string }) {
   const [paymentLinks, setPaymentLinks] = useState<PaymentLink[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [qrOpen, setQrOpen] = useState(false)
+  const [installOpen, setInstallOpen] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null)
 
   useEffect(() => {
     async function loadProfile() {
@@ -143,6 +152,61 @@ export function PublicProfile({ username }: { username: string }) {
 
     loadProfile()
   }, [username])
+
+  // Capture the Chrome/Android PWA install prompt so visitors can "Save to
+  // Home" as a real app icon. iOS Safari doesn't fire this — we fall back
+  // to a short visual guide (Share -> Add to Home Screen).
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault()
+      setInstallPrompt(e as InstallPromptEvent)
+    }
+    window.addEventListener("beforeinstallprompt", handler)
+    return () => window.removeEventListener("beforeinstallprompt", handler)
+  }, [])
+
+  const handleAddToHome = async () => {
+    if (installPrompt) {
+      await installPrompt.prompt()
+      const { outcome } = await installPrompt.userChoice
+      if (outcome === "accepted") setInstallPrompt(null)
+      return
+    }
+    setInstallOpen(true)
+  }
+
+  const handleDownloadQr = () => {
+    const canvas = document.querySelector<HTMLCanvasElement>("#lph-profile-qr canvas")
+    const svg = document.querySelector<SVGElement>("#lph-profile-qr svg")
+    const trigger = (dataUrl: string) => {
+      const a = document.createElement("a")
+      a.href = dataUrl
+      a.download = `linkpayhub-${(profile?.username || "profile").toLowerCase()}.png`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+    }
+    if (canvas) return trigger(canvas.toDataURL("image/png"))
+    if (svg) {
+      const xml = new XMLSerializer().serializeToString(svg)
+      const blob = new Blob([xml], { type: "image/svg+xml" })
+      const url = URL.createObjectURL(blob)
+      const img = document.createElement("img")
+      img.onload = () => {
+        const c = document.createElement("canvas")
+        c.width = img.naturalWidth || 400
+        c.height = img.naturalHeight || 400
+        const ctx = c.getContext("2d")
+        if (!ctx) return
+        ctx.fillStyle = "#0a0a0a"
+        ctx.fillRect(0, 0, c.width, c.height)
+        ctx.drawImage(img, 0, 0)
+        trigger(c.toDataURL("image/png"))
+        URL.revokeObjectURL(url)
+      }
+      img.src = url
+    }
+  }
 
   if (loading) {
     return (
@@ -297,9 +361,134 @@ export function PublicProfile({ username }: { username: string }) {
             ) : (
               <p className="text-white/60">No payment links available.</p>
             )}
+
+            {/* Secondary actions: QR + Add to Home */}
+            <div className="flex gap-2 mt-5 pt-5 border-t border-white/[0.06]">
+              <button
+                onClick={() => setQrOpen(true)}
+                className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition text-[13px] font-semibold text-white/80"
+              >
+                <QrCode className="w-4 h-4" />
+                Show QR
+              </button>
+              <button
+                onClick={handleAddToHome}
+                className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-full bg-[#00e85a]/10 border border-[#00e85a]/30 hover:bg-[#00e85a]/15 hover:border-[#00e85a]/50 transition text-[13px] font-semibold text-[#00e85a]"
+              >
+                <Smartphone className="w-4 h-4" />
+                Save to Home
+              </button>
+            </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* QR modal */}
+      {qrOpen && profile && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setQrOpen(false)}
+        >
+          <div
+            className="relative max-w-sm w-full bg-[#0a0a0a] border border-[#00e85a]/25 rounded-3xl p-6 shadow-[0_30px_100px_rgba(0,232,90,0.25)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setQrOpen(false)}
+              aria-label="Close"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center"
+            >
+              <X className="w-4 h-4 text-white/70" />
+            </button>
+            <div className="text-center mb-5">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-[#00e85a] font-semibold mb-1">Scan to pay</p>
+              <h3 className="text-xl font-bold text-white">@{profile.username}</h3>
+              <p className="text-xs text-white/50 mt-1 font-mono break-all">
+                linkpayhub.com/{profile.username}
+              </p>
+            </div>
+            <div
+              id="lph-profile-qr"
+              className="mx-auto bg-[#0a0a0a] rounded-2xl p-3 w-fit border border-[#00e85a]/25 shadow-[0_0_60px_rgba(0,232,90,0.18)]"
+            >
+              <QRCode
+                value={`${typeof window !== "undefined" ? window.location.origin : "https://linkpayhub.com"}/${profile.username}`}
+                size={320}
+              />
+            </div>
+            <button
+              onClick={handleDownloadQr}
+              className="mt-5 w-full inline-flex items-center justify-center gap-2 bg-[#00e85a] text-black font-bold py-3 rounded-full hover:scale-[1.02] active:scale-[0.98] transition-transform"
+            >
+              <Download className="w-4 h-4" />
+              Save to Photos
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Add-to-Home instructions modal (iOS Safari) */}
+      {installOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setInstallOpen(false)}
+        >
+          <div
+            className="relative max-w-sm w-full bg-[#0a0a0a] border border-[#00e85a]/25 rounded-3xl p-6 shadow-[0_30px_100px_rgba(0,232,90,0.25)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setInstallOpen(false)}
+              aria-label="Close"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center"
+            >
+              <X className="w-4 h-4 text-white/70" />
+            </button>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-[#00e85a]/10 border border-[#00e85a]/30 flex items-center justify-center flex-shrink-0">
+                <Smartphone className="w-6 h-6 text-[#00e85a]" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white leading-tight">Save to Home Screen</h3>
+                <p className="text-xs text-white/50 mt-0.5">One tap to pay @{profile?.username}</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+                <div className="w-7 h-7 rounded-full bg-[#00e85a]/15 border border-[#00e85a]/30 flex items-center justify-center flex-shrink-0 text-xs font-bold text-[#00e85a]">1</div>
+                <p className="text-sm text-white/80 leading-relaxed">
+                  Tap the{" "}
+                  <span className="inline-flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-md font-semibold">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4-4 4M12 4v12" />
+                    </svg>
+                    Share
+                  </span>{" "}
+                  button at the bottom of Safari.
+                </p>
+              </div>
+              <div className="flex items-start gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+                <div className="w-7 h-7 rounded-full bg-[#00e85a]/15 border border-[#00e85a]/30 flex items-center justify-center flex-shrink-0 text-xs font-bold text-[#00e85a]">2</div>
+                <p className="text-sm text-white/80 leading-relaxed">
+                  Scroll and tap <span className="font-semibold text-white">Add to Home Screen</span>.
+                </p>
+              </div>
+              <div className="flex items-start gap-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3">
+                <div className="w-7 h-7 rounded-full bg-[#00e85a]/15 border border-[#00e85a]/30 flex items-center justify-center flex-shrink-0 text-xs font-bold text-[#00e85a]">3</div>
+                <p className="text-sm text-white/80 leading-relaxed">
+                  Tap <span className="font-semibold text-white">Add</span> — the icon opens straight to this profile.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setInstallOpen(false)}
+              className="mt-5 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold py-3 rounded-full text-sm transition"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

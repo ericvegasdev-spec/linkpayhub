@@ -61,6 +61,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    // Per-profile manifest so "Add to Home Screen" from a profile page saves
+    // the profile URL, not the site root, and labels the icon with the handle.
+    manifest: `/${profile.username}/manifest.webmanifest`,
+    appleWebApp: {
+      capable: true,
+      title: `@${profile.username}`,
+      statusBarStyle: "black-translucent",
+    },
     openGraph: {
       title,
       description,
