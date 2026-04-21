@@ -204,9 +204,10 @@ export function PublicProfile({ username }: { username: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 py-12 relative overflow-hidden">
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-[#010804] to-black pointer-events-none" aria-hidden />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,232,90,0.12)_0%,_transparent_60%)] pointer-events-none" aria-hidden />
+    <div className="min-h-screen bg-[#00140a] text-white p-4 py-12 relative overflow-hidden">
+      <div className="fixed inset-0 bg-gradient-to-b from-[#063d20] via-[#012a14] to-[#000804] pointer-events-none" aria-hidden />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,232,90,0.28)_0%,_transparent_55%)] pointer-events-none" aria-hidden />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom,_rgba(0,232,90,0.12)_0%,_transparent_60%)] pointer-events-none" aria-hidden />
 
       <div className="relative z-10 max-w-2xl mx-auto">
         <div className="text-center mb-8">
