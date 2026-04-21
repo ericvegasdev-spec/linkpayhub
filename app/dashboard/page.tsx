@@ -311,11 +311,19 @@ export default function DashboardPage() {
     setClaimingId(profileId)
     setSaveError("")
     try {
-      const { error } = await supabase
+      // .select() after update lets us detect silent RLS blocks — Supabase
+      // returns no error but zero rows when a policy vetoes the write.
+      const { data, error } = await supabase
         .from("profiles")
         .update({ auth_user_id: session.user.id, pending_email: null })
         .eq("id", profileId)
+        .select("id")
       if (error) throw error
+      if (!data || data.length === 0) {
+        throw new Error(
+          "Supabase blocked the claim (row-level security). Ask the admin to run the claim-policy SQL, then try again."
+        )
+      }
       await fetchData(session.user.id, session.user.email ?? undefined)
     } catch (err: any) {
       setSaveError(err.message || "Couldn't claim profile. If this persists, you may need to create one from onboarding.")
