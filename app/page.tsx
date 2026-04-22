@@ -301,33 +301,27 @@ export default function HomePage() {
                 className="lph-enter max-w-md mx-auto lg:mx-0 space-y-3"
                 style={{ animationDelay: "240ms" }}
               >
-                <div className="relative flex items-stretch overflow-hidden rounded-full bg-gradient-to-b from-[#0f0f0f] to-[#070707] border-2 border-white/10 focus-within:border-[#00e85a] hover:border-[#00e85a]/50 transition-colors shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_40px_rgba(0,0,0,0.6)]">
-                  <span className="pl-5 pr-1 py-3 sm:py-4 flex items-center text-sm sm:text-base text-white/40 whitespace-nowrap tracking-tight">
+                <div className="relative flex items-center overflow-hidden rounded-full bg-[#0a0a0a] border-2 border-white/10 focus-within:border-[#00e85a] hover:border-[#00e85a]/50 transition-colors shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+                  <span className="pl-5 py-3 sm:py-4 text-base sm:text-lg text-white/50 whitespace-nowrap">
                     linkpayhub.com/
                   </span>
-                  <div className="relative flex-1 min-w-0 flex items-center bg-[#00e85a]/[0.04] before:absolute before:inset-y-0 before:left-0 before:w-px before:bg-gradient-to-b before:from-transparent before:via-[#00e85a]/30 before:to-transparent">
-                    <input
-                      type="text"
-                      placeholder="pick your handle"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
-                      className="w-full bg-transparent outline-none text-white font-bold tracking-tight text-lg sm:text-2xl placeholder:text-[#00e85a]/60 placeholder:font-semibold placeholder:tracking-normal pl-3 pr-4 py-3 sm:py-4 lph-input-pulse"
-                      aria-label="Pick your handle"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    placeholder="pick your handle"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
+                    className="flex-1 min-w-0 bg-transparent outline-none text-white font-semibold text-base sm:text-lg placeholder:text-[#00e85a]/70 pl-1 pr-4 py-3 sm:py-4 lph-input-pulse"
+                    aria-label="Pick your handle"
+                  />
                 </div>
                 <button
                   onClick={handleGetStarted}
                   disabled={!username}
-                  className="group relative overflow-hidden w-full bg-gradient-to-b from-[#fcc635] to-[#f59e0b] hover:from-[#fbbf24] hover:to-[#d97706] text-black px-7 py-4 sm:py-5 rounded-full font-black tracking-tight text-base sm:text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:hover:scale-[1.015] enabled:active:scale-[0.98] shadow-[0_12px_40px_rgba(251,191,36,0.4),inset_0_1px_0_rgba(255,255,255,0.4)] enabled:hover:shadow-[0_18px_55px_rgba(251,191,36,0.55),inset_0_1px_0_rgba(255,255,255,0.5)]"
+                  className="group w-full bg-[#fbbf24] hover:bg-[#f59e0b] text-black px-7 py-4 sm:py-5 rounded-full font-bold text-base sm:text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:hover:scale-[1.02] enabled:active:scale-[0.98] shadow-[0_10px_40px_rgba(251,191,36,0.35)] enabled:hover:shadow-[0_15px_50px_rgba(251,191,36,0.5)]"
                 >
-                  <span
-                    className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-enabled:group-hover:translate-x-full transition-transform duration-[900ms] ease-out"
-                    aria-hidden
-                  />
-                  <span className="relative z-10 inline-flex items-center justify-center gap-2">
+                  <span className="inline-flex items-center justify-center gap-2">
                     Claim your link
-                    <ArrowRight className="w-5 h-5 transition-transform group-enabled:group-hover:translate-x-1" />
+                    <ArrowRight className="w-5 h-5 transition-transform group-enabled:group-hover:translate-x-0.5" />
                   </span>
                 </button>
                 <p className="text-xs text-white/40 text-center lg:text-left">
