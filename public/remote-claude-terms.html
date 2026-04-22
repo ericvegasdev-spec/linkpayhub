@@ -85,6 +85,19 @@
   <h2>What you're buying</h2>
   <p>A setup guide (PDF), two shell scripts (iMessage bridge + send helper), two iPhone Shortcut templates, and a starter Claude Code permission allowlist. Delivered by email after Stripe confirms payment. Digital product — no physical shipping, no refund for "it arrived slowly."</p>
 
+  <h2>What's supported (and what's not)</h2>
+  <p>The bridge shipped in this product forwards <strong>plain text iMessages</strong> to Claude Code. That's the core, tested path.</p>
+  <p><strong>Not supported in v1:</strong></p>
+  <ul>
+    <li><strong>Voice memos</strong> — audio isn't transcribed; the bridge skips it</li>
+    <li><strong>Photos</strong> — image attachments aren't forwarded to Claude</li>
+    <li><strong>Videos</strong> — not forwarded, and Claude Code doesn't natively process video</li>
+    <li><strong>Files (PDFs, docs, CSVs)</strong> — attachments aren't forwarded</li>
+    <li><strong>Stickers, tapbacks, reactions</strong> — no useful content for Claude</li>
+    <li><strong>iMessage apps (Apple Pay, location pins, contact cards)</strong> — not supported</li>
+  </ul>
+  <p>Extending the bridge to handle more content types (images, PDFs, voice transcription) is technically possible and may be released as a future v2 upgrade — but that upgrade is not included in this purchase. The scope here is text in → Claude working → text out.</p>
+
   <h2>Prerequisites you confirmed</h2>
   <p>You clicked through checkboxes confirming you meet these prerequisites before buying:</p>
   <ul>
