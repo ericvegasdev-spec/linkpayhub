@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Remote Claude — Terms & Refund Policy</title>
+<meta name="theme-color" content="#FFD93B">
+<link rel="icon" href="/favicon.ico">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  :root {
+    --bg: #FFD93B;
+    --bg-soft: #FEF6DC;
+    --ink: #131313;
+    --ink-soft: #3A3A3A;
+    --muted: #6B6B6B;
+    --green: #0C6B3E;
+    --line: rgba(19,19,19,0.12);
+  }
+  body {
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  a { color: var(--green); font-weight: 700; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 28px 22px 80px; }
+
+  header.nav {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0 36px;
+  }
+  .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 900; font-size: 17px; }
+  .brand-mark { width: 32px; height: 32px; background: var(--ink); color: var(--bg); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; }
+
+  h1 { font-size: clamp(32px, 7vw, 44px); font-weight: 900; letter-spacing: -0.03em; margin: 8px 0 8px; line-height: 1.05; }
+  .subtitle { color: var(--ink-soft); font-size: 15px; margin: 0 0 32px; font-weight: 500; }
+
+  h2 { font-size: 20px; font-weight: 900; margin: 36px 0 12px; letter-spacing: -0.02em; }
+  p, li { font-size: 15px; color: var(--ink); font-weight: 500; }
+  ul { padding-left: 1.2em; }
+  li { margin-bottom: 8px; }
+
+  .card {
+    background: var(--bg-soft);
+    border: 2px solid var(--ink);
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin: 20px 0;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .effective { color: var(--muted); font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+
+  footer {
+    margin-top: 56px; padding-top: 24px; border-top: 2px solid var(--ink);
+    text-align: center; color: var(--muted); font-size: 12.5px; font-weight: 600;
+  }
+
+  .back-link {
+    display: inline-block; margin-bottom: 24px; color: var(--ink);
+    text-decoration: none; font-weight: 800; font-size: 14px;
+  }
+  .back-link::before { content: "← "; }
+  .back-link:hover { color: var(--green); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="nav">
+    <a href="/remote-claude.html" class="brand" style="text-decoration:none;color:var(--ink);">
+      <span class="brand-mark">R</span>
+      <span>Remote Claude</span>
+    </a>
+  </header>
+
+  <a href="/remote-claude.html" class="back-link">Back to product</a>
+
+  <h1>Terms & Refund Policy</h1>
+  <p class="subtitle">The short version: this product gives you the infrastructure to run Claude Code from your phone. What you do with it, and any third-party services (Apple, Anthropic, your ISP) you depend on, are your responsibility.</p>
+  <p class="effective">Effective 2026-04-22 · by purchasing, you agree to these terms</p>
+
+  <h2>What you're buying</h2>
+  <p>A setup guide (PDF), two shell scripts (iMessage bridge + send helper), two iPhone Shortcut templates, and a starter Claude Code permission allowlist. Delivered by email after Stripe confirms payment. Digital product — no physical shipping, no refund for "it arrived slowly."</p>
+
+  <h2>Prerequisites you confirmed</h2>
+  <p>You clicked through checkboxes confirming you meet these prerequisites before buying:</p>
+  <ul>
+    <li>iPhone 8 or newer, iOS 15+, with the Shortcuts app</li>
+    <li>Mac (mini, MacBook, or Studio) running macOS 12 Monterey or later</li>
+    <li>Claude Code already installed and actively working on the Mac</li>
+    <li>Both devices signed into the same Apple ID with iMessage active</li>
+    <li>Ability to leave the Mac running while away</li>
+  </ul>
+  <p><strong>If you did not actually have the above at purchase time, you are not eligible for a refund.</strong> Your confirmation is binding.</p>
+
+  <h2>What we are NOT responsible for</h2>
+  <div class="card">
+    <p><strong>Your Anthropic / Claude API account.</strong> Rate limits, token quotas, plan upgrades, API outages, session token expirations, and any billing with Anthropic are between you and Anthropic. If Claude stops responding because you hit your quota, that's not a bug in our product.</p>
+  </div>
+  <div class="card">
+    <p><strong>Your internet connection.</strong> If your home Wi-Fi or ISP goes down while you're away, your Mac can't reach Anthropic's servers. That's outside our product's scope.</p>
+  </div>
+  <div class="card">
+    <p><strong>Apple / iCloud account issues.</strong> iMessage delivery, Apple ID account problems, Family Sharing quirks, or changes to Apple's iMessage protocol are Apple's domain. We can't fix them.</p>
+  </div>
+  <div class="card">
+    <p><strong>iOS or macOS updates breaking things.</strong> Apple occasionally ships updates that disable Shortcuts, revoke Automation permissions, or change Messages.app behavior. We document current-version instructions; when Apple ships breaking changes, we update the guide, but we don't guarantee same-day compatibility with brand-new OS releases.</p>
+  </div>
+  <div class="card">
+    <p><strong>Your Mac's hardware or configuration.</strong> Performance problems, sleep issues beyond what we document, disk-full errors, or firewall/VPN software blocking Anthropic's API endpoints are your environment, not our product.</p>
+  </div>
+  <div class="card">
+    <p><strong>Your use of the setup.</strong> You are responsible for what you tell Claude to do and for reviewing changes before deploying them. This product enables remote control — it does not supervise Claude's outputs. If Claude writes bad code or pushes something you didn't intend, that's on you.</p>
+  </div>
+
+  <h2>Support</h2>
+  <p>We'll help you debug setup issues tied directly to the scripts, shortcuts, or guide we shipped. Email <a href="mailto:hello@linkpayhub.com">hello@linkpayhub.com</a> with:</p>
+  <ul>
+    <li>Which chapter/step you got stuck on</li>
+    <li>What you expected vs. what actually happened</li>
+    <li>Copy/paste of any error text</li>
+    <li>Your Mac model and macOS version</li>
+  </ul>
+  <p>We respond within 2 business days. Issues we DON'T cover: Anthropic billing, Apple support tickets, VPN/firewall config, custom modifications of the scripts.</p>
+
+  <h2>Refund Policy</h2>
+  <p><strong>14-day satisfaction guarantee.</strong> If after reasonable back-and-forth we can't get your setup working — and the failure is in our product (scripts, shortcuts, guide) — full refund.</p>
+  <p><strong>Not eligible:</strong></p>
+  <ul>
+    <li>You didn't have the prerequisites you confirmed at checkout</li>
+    <li>The failure was in your Claude API account, ISP, iCloud, or other third-party service</li>
+    <li>You didn't engage with support ("it doesn't work" with no follow-up)</li>
+    <li>Outside the 14-day window</li>
+    <li>You bought it with the intent to copy/share it (we enforce this)</li>
+  </ul>
+
+  <h2>License</h2>
+  <p>You get a personal-use license to the PDF, scripts, and shortcut templates. Don't redistribute, resell, or publish the materials. Internal team use is fine — up to 5 devices per purchase.</p>
+
+  <h2>Limitation of liability</h2>
+  <p>Our liability for any claim is limited to the purchase price. This product is provided as-is, without warranties express or implied beyond what's stated in this Refund Policy.</p>
+
+  <h2>Governing law</h2>
+  <p>These terms are governed by the laws of the jurisdiction where the seller (Eric Ortiz, operating as LinkPayHub) is resident. Disputes will be resolved in that jurisdiction.</p>
+
+  <footer>
+    Remote Claude is a companion product of <a href="https://linkpayhub.com">LinkPayHub</a> · built by Eric Ortiz<br>
+    Contact: hello@linkpayhub.com
+  </footer>
+
+</div>
+</body>
+</html>
