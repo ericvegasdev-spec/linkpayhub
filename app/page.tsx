@@ -251,7 +251,7 @@ export default function HomePage() {
             <div className="space-y-8 text-center lg:text-left">
               <span
                 ref={eyebrowRef}
-                className="lph-enter inline-flex items-center gap-2 bg-[#00e85a]/[0.07] border border-[#00e85a]/30 text-[#00e85a] text-[11px] sm:text-xs font-semibold tracking-[0.15em] uppercase px-3 py-1.5 rounded-full shadow-[0_0_24px_rgba(0,232,90,0.15)]"
+                className="lph-enter hidden lg:inline-flex items-center gap-2 bg-[#00e85a]/[0.07] border border-[#00e85a]/30 text-[#00e85a] text-[11px] sm:text-xs font-semibold tracking-[0.15em] uppercase px-3 py-1.5 rounded-full shadow-[0_0_24px_rgba(0,232,90,0.15)]"
                 style={{ animationDelay: "0ms" }}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00e85a] shadow-[0_0_10px_rgba(0,232,90,0.9)]" />
@@ -274,11 +274,11 @@ export default function HomePage() {
                 className="lph-enter space-y-3"
                 style={{ animationDelay: "160ms" }}
               >
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 sm:gap-2.5 max-w-md lg:max-w-none mx-auto lg:mx-0">
-                  {(["cashapp","venmo","paypal","zelle","applepay","googlepay","bitcoin","stripe"] as const).map((p) => (
+                <div className="grid grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-2.5 max-w-md lg:max-w-none mx-auto lg:mx-0">
+                  {(["cashapp","venmo","zelle","applepay","paypal","googlepay","bitcoin","stripe"] as const).map((p, idx) => (
                     <div
                       key={p}
-                      className="aspect-square rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center hover:border-[#00e85a]/30 transition-colors"
+                      className={`aspect-square rounded-2xl bg-white/[0.04] border border-white/10 ${idx >= 4 ? "hidden lg:flex" : "flex"} items-center justify-center hover:border-[#00e85a]/30 transition-colors`}
                     >
                       <PaymentIcon
                         platform={p}
@@ -292,7 +292,7 @@ export default function HomePage() {
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#00e85a]/10 border border-[#00e85a]/25 text-[#00e85a]">
                     0% fees
                   </span>
-                  <span className="uppercase tracking-[0.15em]">8 apps, one link</span>
+                  <span className="hidden lg:inline uppercase tracking-[0.15em]">8 apps, one link</span>
                 </div>
               </div>
 
@@ -301,17 +301,17 @@ export default function HomePage() {
                 className="lph-enter max-w-md mx-auto lg:mx-0 space-y-3"
                 style={{ animationDelay: "240ms" }}
               >
-                <div className="relative flex items-stretch overflow-hidden rounded-full bg-[#0a0a0a] border-2 border-white/10 focus-within:border-[#00e85a] hover:border-[#00e85a]/60 transition-colors shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
-                  <span className="pl-5 pr-1 py-3 sm:py-4 flex items-center text-sm sm:text-base text-white/35 whitespace-nowrap font-mono">
+                <div className="relative flex items-stretch overflow-hidden rounded-full bg-gradient-to-b from-[#0f0f0f] to-[#070707] border-2 border-white/10 focus-within:border-[#00e85a] hover:border-[#00e85a]/50 transition-colors shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_40px_rgba(0,0,0,0.6)]">
+                  <span className="pl-5 pr-1 py-3 sm:py-4 flex items-center text-sm sm:text-base text-white/40 whitespace-nowrap tracking-tight">
                     linkpayhub.com/
                   </span>
-                  <div className="relative flex-1 min-w-0 flex items-center bg-[#00e85a]/[0.04]">
+                  <div className="relative flex-1 min-w-0 flex items-center bg-[#00e85a]/[0.04] before:absolute before:inset-y-0 before:left-0 before:w-px before:bg-gradient-to-b before:from-transparent before:via-[#00e85a]/30 before:to-transparent">
                     <input
                       type="text"
                       placeholder="pick your handle"
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
-                      className="w-full bg-transparent outline-none text-white font-bold text-lg sm:text-2xl placeholder:text-[#00e85a]/60 placeholder:font-semibold pr-4 py-3 sm:py-4 lph-input-pulse"
+                      className="w-full bg-transparent outline-none text-white font-bold tracking-tight text-lg sm:text-2xl placeholder:text-[#00e85a]/60 placeholder:font-semibold placeholder:tracking-normal pl-3 pr-4 py-3 sm:py-4 lph-input-pulse"
                       aria-label="Pick your handle"
                     />
                   </div>
@@ -319,11 +319,15 @@ export default function HomePage() {
                 <button
                   onClick={handleGetStarted}
                   disabled={!username}
-                  className="group relative overflow-hidden w-full bg-[#fbbf24] hover:bg-[#f59e0b] text-black px-7 py-4 sm:py-5 rounded-full font-bold text-base sm:text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:hover:scale-[1.02] enabled:active:scale-[0.98] shadow-[0_10px_40px_rgba(251,191,36,0.35)] enabled:hover:shadow-[0_15px_50px_rgba(251,191,36,0.5)]"
+                  className="group relative overflow-hidden w-full bg-gradient-to-b from-[#fcc635] to-[#f59e0b] hover:from-[#fbbf24] hover:to-[#d97706] text-black px-7 py-4 sm:py-5 rounded-full font-black tracking-tight text-base sm:text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:hover:scale-[1.015] enabled:active:scale-[0.98] shadow-[0_12px_40px_rgba(251,191,36,0.4),inset_0_1px_0_rgba(255,255,255,0.4)] enabled:hover:shadow-[0_18px_55px_rgba(251,191,36,0.55),inset_0_1px_0_rgba(255,255,255,0.5)]"
                 >
+                  <span
+                    className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-enabled:group-hover:translate-x-full transition-transform duration-[900ms] ease-out"
+                    aria-hidden
+                  />
                   <span className="relative z-10 inline-flex items-center justify-center gap-2">
                     Claim your link
-                    <ArrowRight className="w-5 h-5 transition-transform group-enabled:group-hover:translate-x-0.5" />
+                    <ArrowRight className="w-5 h-5 transition-transform group-enabled:group-hover:translate-x-1" />
                   </span>
                 </button>
                 <p className="text-xs text-white/40 text-center lg:text-left">
@@ -333,7 +337,7 @@ export default function HomePage() {
 
               <div
                 ref={chipsRef}
-                className="lph-enter grid grid-cols-3 gap-2 sm:gap-3 max-w-md mx-auto lg:mx-0 pt-2"
+                className="lph-enter hidden lg:grid grid-cols-3 gap-2 sm:gap-3 max-w-md mx-auto lg:mx-0 pt-2"
                 style={{ animationDelay: "320ms" }}
               >
                 {[
@@ -354,8 +358,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* RIGHT: Phone mockup */}
-            <div className="relative flex justify-center">
+            {/* RIGHT on desktop, TOP on mobile: Phone mockup */}
+            <div className="relative flex justify-center order-first lg:order-none">
               <div
                 ref={phoneRef}
                 className="relative w-[260px] sm:w-[320px] lg:w-[440px] xl:w-[500px] 2xl:w-[540px] lph-float"

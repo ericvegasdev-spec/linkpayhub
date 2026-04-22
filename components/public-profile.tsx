@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { User, QrCode, Smartphone, X, Download } from "lucide-react"
+import { User, QrCode, Smartphone, X, Download, BadgeCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { supabase } from "@/lib/supabaseclient"
@@ -317,14 +317,28 @@ export function PublicProfile({ username }: { username: string }) {
                 )}
               </div>
 
-              <h1 className="text-2xl font-bold text-[#00e85a] drop-shadow-[0_0_20px_rgba(0,232,90,0.35)] mb-1">@{profile.username}</h1>
+              <h1 className="inline-flex items-center gap-1.5 text-2xl font-bold text-[#00e85a] drop-shadow-[0_0_20px_rgba(0,232,90,0.35)] mb-1">
+                <span>@{profile.username}</span>
+                <BadgeCheck
+                  className="w-5 h-5 text-[#7dd3fc] drop-shadow-[0_0_8px_rgba(125,211,252,0.4)]"
+                  aria-label="Verified"
+                />
+              </h1>
 
-              {profile.bio && <p className="text-sm text-white/60 max-w-md mt-2">{profile.bio}</p>}
+              <p className="text-xs text-[#7dd3fc]/80 max-w-md mt-1.5 leading-relaxed">
+                Payments go directly to @{profile.username}. We never handle your money.
+              </p>
+
+              {profile.bio && <p className="text-sm text-white/60 max-w-md mt-3">{profile.bio}</p>}
             </div>
 
             {paymentLinks.length > 0 ? (
-              <div className="space-y-3">
-                {paymentLinks.map((link) => {
+              <>
+                <p className="text-xs text-white/55 text-center mb-3 tracking-wide">
+                  Choose how you want to pay
+                </p>
+                <div className="space-y-3">
+                  {paymentLinks.map((link) => {
                   const style = getPlatformStyle(link.platform)
                   const linkUrl = getDeepLink(link.platform, link.value)
                   const normalizedPlatform = link.platform.toLowerCase().replace(/\s+/g, "")
@@ -396,7 +410,8 @@ export function PublicProfile({ username }: { username: string }) {
                     </a>
                   )
                 })}
-              </div>
+                </div>
+              </>
             ) : (
               <p className="text-white/60">No payment links available.</p>
             )}
