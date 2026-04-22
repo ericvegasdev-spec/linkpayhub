@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Remote Claude — Run Claude Code from your phone</title>
+<meta name="description" content="The setup manual for running Claude Code entirely from your iPhone. Never be chained to your laptop again. One-time purchase, 14-day guarantee.">
+<meta property="og:title" content="Remote Claude — Run Claude Code from your phone">
+<meta property="og:description" content="Stop being chained to your laptop. This 30-minute setup turns your iPhone into a voice-controlled remote for Claude Code.">
+<meta property="og:image" content="https://linkpayhub.com/linkpayhub-logo.png">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="/favicon.ico">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: #000;
+    color: #fff;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: #00e85a; text-decoration: none; }
+
+  /* Ambient background */
+  .bg {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse at top, rgba(0,232,90,0.15) 0%, transparent 55%),
+      radial-gradient(ellipse at bottom, rgba(0,232,90,0.06) 0%, transparent 60%),
+      linear-gradient(135deg, #000 0%, #010804 50%, #000 100%);
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  header.nav { display: flex; align-items: center; gap: 10px; padding: 8px 0 32px; }
+  header.nav img { width: 36px; height: 36px; border-radius: 10px; }
+  header.nav span { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
+
+  /* Hero */
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,232,90,0.08); border: 1px solid rgba(0,232,90,0.3);
+    color: #00e85a; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 6px 12px; border-radius: 999px;
+    margin-bottom: 20px;
+  }
+  .eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: #00e85a; box-shadow: 0 0 10px rgba(0,232,90,0.9); }
+
+  h1 {
+    font-size: clamp(36px, 8vw, 56px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    margin: 0 0 16px;
+  }
+  h1 .green { background: linear-gradient(135deg, #00e85a 0%, #00a83f 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  .lede {
+    font-size: clamp(16px, 4vw, 19px);
+    color: rgba(255,255,255,0.65);
+    margin: 0 0 28px;
+    max-width: 32em;
+  }
+
+  /* Demo video slot */
+  .demo {
+    background: #0a0a0a;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    aspect-ratio: 9/16;
+    max-width: 320px;
+    margin: 0 auto 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.35);
+    font-size: 13px;
+    overflow: hidden;
+    position: relative;
+  }
+  .demo::before {
+    content: "▶ demo video coming soon";
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at center, rgba(0,232,90,0.12) 0%, transparent 60%);
+  }
+
+  /* What you get section */
+  section { margin: 48px 0; }
+  h2 {
+    font-size: clamp(24px, 6vw, 32px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    margin: 0 0 16px;
+  }
+
+  .features { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .features li {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex; gap: 12px; align-items: flex-start;
+    font-size: 15px;
+  }
+  .features li::before {
+    content: "✓"; color: #00e85a; font-weight: 900;
+    flex-shrink: 0; margin-top: 2px;
+  }
+
+  /* Prereq checklist */
+  .prereq {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .prereq h3 {
+    font-size: 15px; font-weight: 800; letter-spacing: 0.05em;
+    text-transform: uppercase; color: rgba(255,255,255,0.8);
+    margin: 0 0 12px;
+  }
+  .prereq p { color: rgba(255,255,255,0.5); font-size: 13px; margin: 0 0 18px; }
+  .prereq label {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+  }
+  .prereq label:first-of-type { border-top: none; }
+  .prereq input[type="checkbox"] {
+    appearance: none; -webkit-appearance: none;
+    width: 22px; height: 22px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    cursor: pointer;
+    position: relative;
+    background: transparent;
+    transition: all 0.15s;
+  }
+  .prereq input[type="checkbox"]:checked {
+    background: #00e85a;
+    border-color: #00e85a;
+  }
+  .prereq input[type="checkbox"]:checked::after {
+    content: "✓";
+    color: #000;
+    font-weight: 900;
+    font-size: 14px;
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* CTA */
+  .cta-block { text-align: center; margin: 24px 0 8px; }
+  .price {
+    display: inline-flex; align-items: baseline; gap: 6px;
+    margin-bottom: 12px;
+  }
+  .price .amount { font-size: 44px; font-weight: 900; letter-spacing: -0.02em; color: #fff; }
+  .price .note { color: rgba(255,255,255,0.5); font-size: 13px; }
+
+  .buy-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%;
+    background: #fbbf24;
+    color: #000;
+    font-weight: 800;
+    font-size: 17px;
+    padding: 18px 24px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 10px 40px rgba(251,191,36,0.35);
+    text-decoration: none;
+  }
+  .buy-btn:not([disabled]):hover {
+    background: #f59e0b;
+    transform: scale(1.02);
+    box-shadow: 0 15px 50px rgba(251,191,36,0.5);
+  }
+  .buy-btn:not([disabled]):active { transform: scale(0.98); }
+  .buy-btn[disabled] { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+  .buy-note {
+    color: rgba(255,255,255,0.4);
+    font-size: 12px; margin-top: 12px;
+  }
+
+  /* Guarantee badge */
+  .guarantee {
+    margin: 40px auto;
+    padding: 20px;
+    background: rgba(0,232,90,0.05);
+    border: 1px solid rgba(0,232,90,0.25);
+    border-radius: 16px;
+    text-align: center;
+  }
+  .guarantee strong { color: #00e85a; font-size: 18px; font-weight: 900; display: block; margin-bottom: 4px; }
+  .guarantee p { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+
+  /* FAQ */
+  .faq details {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 0 18px;
+    margin-bottom: 8px;
+  }
+  .faq summary {
+    padding: 16px 0;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 15px;
+    list-style: none;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: "+"; float: right; color: #00e85a; font-weight: 900; font-size: 20px;
+  }
+  .faq details[open] summary::after { content: "−"; }
+  .faq details[open] summary { border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .faq .answer { padding: 14px 0 18px; color: rgba(255,255,255,0.6); font-size: 14px; }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="wrap">
+
+  <header class="nav">
+    <img src="/linkpayhub-logo.png" alt="">
+    <span>Remote Claude</span>
+  </header>
+
+  <div class="eyebrow">No laptop required</div>
+
+  <h1>Run Claude Code <span class="green">from your phone.</span></h1>
+
+  <p class="lede">
+    Stop being chained to your desk. The 30-minute setup that turns your iPhone into a voice-controlled remote for Claude Code running on your home Mac.
+  </p>
+
+  <div class="demo" aria-label="Demo video placeholder"></div>
+
+  <section>
+    <h2>What you get</h2>
+    <ul class="features">
+      <li>A step-by-step PDF guide — the exact 6 setup steps, copy-paste scripts, real commands</li>
+      <li>The iMessage bridge script (lets Claude on your Mac read incoming texts)</li>
+      <li>The iMessage send script (lets Claude reply back to your phone)</li>
+      <li>Two iPhone Shortcuts ("Text my agent" + "Read my agent") with Siri voice triggers</li>
+      <li>macOS sleep-prevention config so your Mac never drops off</li>
+      <li>A pre-built Claude Code permission allowlist so the 1/2/3 prompts stop happening while you're away</li>
+      <li>Troubleshooting for the 6 most common issues</li>
+      <li>14-day satisfaction guarantee</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="prereq">
+      <h3>Before you buy — please confirm</h3>
+      <p>This setup only works if you meet these requirements. Check each one honestly — if any aren't true, the guide won't work for you and you won't be eligible for a refund.</p>
+      <label><input type="checkbox" class="req"> I have an iPhone (iPhone 8 or newer, iOS 15+) with the Shortcuts app</label>
+      <label><input type="checkbox" class="req"> I have a Mac (mini, MacBook, or Studio) running macOS 12 Monterey or later</label>
+      <label><input type="checkbox" class="req"> I already have Claude Code installed and working on my Mac</label>
+      <label><input type="checkbox" class="req"> Both devices use the same Apple ID (so iMessage routes between them)</label>
+      <label><input type="checkbox" class="req"> I can leave my Mac running while I'm away (plugged in, not force-sleeping)</label>
+    </div>
+
+    <div class="cta-block">
+      <div class="price">
+        <span class="amount">$29</span>
+        <span class="note">one-time · instant delivery</span>
+      </div>
+      <a href="#" class="buy-btn" id="buyBtn" disabled>Check the boxes to unlock →</a>
+      <p class="buy-note">Secure checkout via Stripe · PDF delivered instantly by email</p>
+    </div>
+
+    <div class="guarantee">
+      <strong>14-day satisfaction guarantee</strong>
+      <p>Hit a blocker we can't work through together? Full refund. Your prerequisites above are a binding confirmation — refunds aren't eligible if you didn't actually have them.</p>
+    </div>
+  </section>
+
+  <section class="faq">
+    <h2>Questions</h2>
+
+    <details>
+      <summary>How does this actually work?</summary>
+      <div class="answer">Your Mac runs Claude Code in a terminal, waiting. Your iPhone sends iMessages to itself (routed to the Mac). A small script on the Mac watches for those messages and feeds them to Claude. Claude does the work, texts you back. A Siri shortcut reads the reply out loud through your AirPods. All the setup takes ~30 minutes once.</div>
+    </details>
+
+    <details>
+      <summary>Does this work without an iPhone?</summary>
+      <div class="answer">No. This specific setup uses iMessage + iPhone Shortcuts. Android/Windows versions aren't covered in this guide — that's a different product.</div>
+    </details>
+
+    <details>
+      <summary>Do I need to be a developer?</summary>
+      <div class="answer">You need to already use Claude Code. Beyond that, the guide is copy-paste — no writing code, just running commands we wrote for you.</div>
+    </details>
+
+    <details>
+      <summary>What if my Mac goes to sleep?</summary>
+      <div class="answer">The guide has a full chapter on preventing Mac sleep — three settings for any Mac, plus an extra step for closed-lid MacBooks using the free Amphetamine app.</div>
+    </details>
+
+    <details>
+      <summary>Will Claude still ask me to approve things while I'm away?</summary>
+      <div class="answer">Only for commands you haven't pre-approved. Chapter 1.6 gives you a starting settings.json block that covers the common stuff. As you work, you add patterns once and they never prompt again.</div>
+    </details>
+
+    <details>
+      <summary>What happens after I pay?</summary>
+      <div class="answer">Stripe confirms payment. You get the PDF by email within minutes. Open it on your Mac and work through the chapters in order — most people finish in under an hour.</div>
+    </details>
+
+  </section>
+
+  <footer>
+    Remote Claude is a companion product of <a href="https://linkpayhub.com">LinkPayHub</a>. Built by Eric Ortiz.<br>
+    Contact: hello@linkpayhub.com · © 2026
+  </footer>
+
+</div>
+
+<script>
+  const reqs = document.querySelectorAll('.req');
+  const btn = document.getElementById('buyBtn');
+  const PAYMENT_URL = 'https://buy.stripe.com/REPLACE_ME'; // Eric: replace with your Stripe Payment Link
+
+  function update() {
+    const ok = [...reqs].every(c => c.checked);
+    if (ok) {
+      btn.removeAttribute('disabled');
+      btn.setAttribute('href', PAYMENT_URL);
+      btn.textContent = 'Buy Remote Claude — $29 →';
+    } else {
+      btn.setAttribute('disabled', '');
+      btn.setAttribute('href', '#');
+      btn.textContent = 'Check the boxes to unlock →';
+    }
+  }
+  reqs.forEach(c => c.addEventListener('change', update));
+</script>
+
+</body>
+</html>
