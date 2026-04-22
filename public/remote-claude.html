@@ -3,25 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Remote Claude — Run Claude Code from your phone</title>
-<meta name="description" content="The setup manual for running Claude Code entirely from your iPhone. Never be chained to your laptop again. One-time purchase, 14-day guarantee.">
-<meta property="og:title" content="Remote Claude — Run Claude Code from your phone">
-<meta property="og:description" content="Stop being chained to your laptop. This 30-minute setup turns your iPhone into a voice-controlled remote for Claude Code.">
-<meta name="theme-color" content="#FFD33B">
+<title>Remote Claude — Run Claude Code with your voice. Zero keyboards.</title>
+<meta name="description" content="The voice-first playbook for Claude Code. Siri + hands-free + no typing. Works while Anthropic's voice mode stays broken.">
+<meta property="og:title" content="Remote Claude — Run Claude Code with your voice. Zero keyboards.">
+<meta property="og:description" content="Every other Claude remote makes you type. Yours doesn't.">
+<meta name="theme-color" content="#FFD93B">
 <link rel="icon" href="/favicon.ico">
 <style>
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   :root {
-    --bg: #FFD93B;          /* bold freedom yellow */
-    --bg-soft: #FEF6DC;     /* cream card */
-    --ink: #131313;         /* near-black */
-    --ink-soft: #3A3A3A;    /* body */
-    --muted: #6B6B6B;       /* secondary text */
-    --green: #0C6B3E;       /* forest green, distinct from LinkPayHub neon */
+    --bg: #FFD93B;
+    --bg-soft: #FEF6DC;
+    --ink: #131313;
+    --ink-soft: #3A3A3A;
+    --muted: #6B6B6B;
+    --green: #0C6B3E;
     --green-dark: #084D2C;
     --line: rgba(19,19,19,0.12);
-    --accent: #D94A1A;      /* sunset orange for emphasis */
+    --accent: #D94A1A;
   }
   body {
     font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
@@ -32,7 +32,6 @@
     overflow-x: hidden;
     position: relative;
   }
-  /* Subtle grain / dot pattern on background */
   body::before {
     content: "";
     position: fixed; inset: 0; pointer-events: none; z-index: 0;
@@ -47,28 +46,11 @@
 
   .wrap { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 28px 22px 80px; }
 
-  /* Header */
-  header.nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 0 36px;
-  }
-  .brand {
-    display: inline-flex; align-items: center; gap: 10px;
-    font-weight: 900; font-size: 17px; letter-spacing: -0.02em;
-    color: var(--ink);
-  }
-  .brand-mark {
-    width: 32px; height: 32px;
-    background: var(--ink); color: var(--bg);
-    border-radius: 8px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 18px; letter-spacing: -0.05em;
-  }
-  .nav-right {
-    color: var(--muted); font-size: 13px; font-weight: 600;
-  }
+  header.nav { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 36px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 900; font-size: 17px; letter-spacing: -0.02em; color: var(--ink); }
+  .brand-mark { width: 32px; height: 32px; background: var(--ink); color: var(--bg); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; letter-spacing: -0.05em; }
+  .nav-right { color: var(--muted); font-size: 13px; font-weight: 600; }
 
-  /* Hero */
   .eyebrow {
     display: inline-flex; align-items: center; gap: 8px;
     background: var(--ink); color: var(--bg);
@@ -77,42 +59,41 @@
     padding: 7px 14px; border-radius: 999px;
     margin-bottom: 22px;
   }
-  .eyebrow::before {
-    content: ""; width: 6px; height: 6px; border-radius: 999px;
-    background: var(--green);
-  }
+  .eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--green); }
 
   h1 {
-    font-size: clamp(44px, 10vw, 72px);
+    font-size: clamp(40px, 9.5vw, 68px);
     font-weight: 900;
     letter-spacing: -0.035em;
-    line-height: 0.95;
+    line-height: 0.97;
     margin: 0 0 22px;
     color: var(--ink);
   }
   h1 .underline {
-    position: relative; display: inline-block;
-    white-space: nowrap;
+    position: relative; display: inline-block; white-space: nowrap;
   }
   h1 .underline::after {
     content: "";
     position: absolute; left: -2%; right: -2%; bottom: 6%;
-    height: 22%;
-    background: var(--green);
-    z-index: -1;
-    transform: skewY(-1.5deg);
-    opacity: 0.55;
+    height: 22%; background: var(--green);
+    z-index: -1; transform: skewY(-1.5deg); opacity: 0.55;
   }
 
   .lede {
-    font-size: clamp(17px, 4.3vw, 20px);
+    font-size: clamp(18px, 4.5vw, 21px);
+    color: var(--ink);
+    margin: 0 0 14px;
+    max-width: 30em;
+    font-weight: 700;
+  }
+  .sublede {
+    font-size: clamp(15px, 4vw, 17px);
     color: var(--ink-soft);
     margin: 0 0 32px;
-    max-width: 30em;
+    max-width: 32em;
     font-weight: 500;
   }
 
-  /* Demo video slot */
   .demo {
     background: var(--ink);
     border: 3px solid var(--ink);
@@ -121,20 +102,17 @@
     max-width: 320px;
     margin: 0 auto 44px;
     display: flex; align-items: center; justify-content: center;
-    color: rgba(255,255,255,0.4);
-    font-size: 13px;
-    overflow: hidden;
-    position: relative;
+    color: rgba(255,255,255,0.4); font-size: 13px;
+    overflow: hidden; position: relative;
     box-shadow: 8px 8px 0 var(--ink);
   }
   .demo::before {
-    content: "▶ demo video coming soon";
+    content: "▶ 30-sec demo coming soon";
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
     font-weight: 600; letter-spacing: 0.05em;
   }
 
-  /* Sections */
   section { margin: 56px 0; }
   h2 {
     font-size: clamp(28px, 6.5vw, 38px);
@@ -144,6 +122,40 @@
     color: var(--ink);
     line-height: 1.05;
   }
+  h2 .accent { color: var(--accent); }
+
+  /* Differentiation table */
+  .vs-table {
+    background: var(--bg-soft);
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    padding: 6px;
+    margin: 0 -4px;
+    box-shadow: 6px 6px 0 var(--ink);
+    overflow-x: auto;
+  }
+  .vs-table table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .vs-table th, .vs-table td {
+    padding: 10px 8px; text-align: center;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .vs-table th:first-child, .vs-table td:first-child {
+    text-align: left; font-weight: 700; padding-left: 14px;
+  }
+  .vs-table th {
+    font-weight: 900; font-size: 11px; letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--ink); color: var(--bg);
+  }
+  .vs-table th:first-child { border-top-left-radius: 14px; }
+  .vs-table th:last-child { border-top-right-radius: 14px; }
+  .vs-table tr:last-child td { border-bottom: none; }
+  .vs-table .ours { background: rgba(12,107,62,0.08); font-weight: 800; }
+  .yes { color: var(--green); font-weight: 900; font-size: 18px; }
+  .no { color: var(--muted); font-weight: 700; opacity: 0.5; font-size: 14px; }
 
   /* What you get */
   .features { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
@@ -153,23 +165,19 @@
     border-radius: 14px;
     padding: 14px 18px;
     display: flex; gap: 14px; align-items: flex-start;
-    font-size: 15px;
-    color: var(--ink);
-    font-weight: 500;
+    font-size: 15px; color: var(--ink); font-weight: 500;
     box-shadow: 3px 3px 0 var(--ink);
   }
   .features li::before {
     content: "✓";
-    background: var(--green);
-    color: var(--bg-soft);
-    width: 22px; height: 22px;
-    border-radius: 6px;
+    background: var(--green); color: var(--bg-soft);
+    width: 22px; height: 22px; border-radius: 6px;
     display: inline-flex; align-items: center; justify-content: center;
     font-weight: 900; font-size: 13px;
     flex-shrink: 0; margin-top: 1px;
   }
 
-  /* Prereq checklist */
+  /* Prereq */
   .prereq {
     background: var(--bg-soft);
     border: 3px solid var(--ink);
@@ -178,192 +186,167 @@
     margin-bottom: 24px;
     box-shadow: 6px 6px 0 var(--ink);
   }
-  .prereq h3 {
-    font-size: 13px; font-weight: 900; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--ink);
-    margin: 0 0 10px;
-  }
+  .prereq h3 { font-size: 13px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); margin: 0 0 10px; }
   .prereq p { color: var(--ink-soft); font-size: 14px; margin: 0 0 18px; font-weight: 500; }
-  .prereq label {
-    display: flex; gap: 14px; align-items: flex-start;
-    padding: 12px 0;
-    border-top: 1px solid var(--line);
-    cursor: pointer;
-    font-size: 15px;
-    color: var(--ink);
-    font-weight: 500;
-  }
+  .prereq label { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--line); cursor: pointer; font-size: 15px; color: var(--ink); font-weight: 500; }
   .prereq label:first-of-type { border-top: none; }
-  .prereq input[type="checkbox"] {
-    appearance: none; -webkit-appearance: none;
-    width: 24px; height: 24px;
-    border: 2.5px solid var(--ink);
-    border-radius: 6px;
-    flex-shrink: 0;
-    margin-top: 1px;
-    cursor: pointer;
-    position: relative;
-    background: transparent;
-    transition: all 0.15s;
-  }
-  .prereq input[type="checkbox"]:checked {
-    background: var(--green);
-    border-color: var(--green);
-  }
-  .prereq input[type="checkbox"]:checked::after {
-    content: "✓";
-    color: white;
-    font-weight: 900;
-    font-size: 15px;
-    position: absolute;
-    inset: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
+  .prereq input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 24px; height: 24px; border: 2.5px solid var(--ink); border-radius: 6px; flex-shrink: 0; margin-top: 1px; cursor: pointer; position: relative; background: transparent; transition: all 0.15s; }
+  .prereq input[type="checkbox"]:checked { background: var(--green); border-color: var(--green); }
+  .prereq input[type="checkbox"]:checked::after { content: "✓"; color: white; font-weight: 900; font-size: 15px; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 
   /* CTA */
   .cta-block { text-align: center; margin: 28px 0 8px; }
-  .price {
-    display: inline-flex; align-items: baseline; gap: 8px;
-    margin-bottom: 14px;
-    color: var(--ink);
-  }
+  .price { display: inline-flex; align-items: baseline; gap: 8px; margin-bottom: 14px; color: var(--ink); }
   .price .amount { font-size: 54px; font-weight: 900; letter-spacing: -0.035em; line-height: 1; }
   .price .note { color: var(--muted); font-size: 13px; font-weight: 600; }
-
   .buy-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-    width: 100%;
-    background: var(--ink);
-    color: var(--bg);
-    font-weight: 900;
-    font-size: 18px;
-    padding: 22px 26px;
-    border: 3px solid var(--ink);
-    border-radius: 999px;
-    cursor: pointer;
-    transition: all 0.15s;
-    box-shadow: 6px 6px 0 var(--ink);
-    text-decoration: none;
-    letter-spacing: -0.01em;
+    width: 100%; background: var(--ink); color: var(--bg);
+    font-weight: 900; font-size: 18px; padding: 22px 26px;
+    border: 3px solid var(--ink); border-radius: 999px;
+    cursor: pointer; transition: all 0.15s; box-shadow: 6px 6px 0 var(--ink);
+    text-decoration: none; letter-spacing: -0.01em;
   }
-  .buy-btn:not([disabled]):hover {
-    background: var(--green);
-    border-color: var(--green);
-    transform: translate(-2px, -2px);
-    box-shadow: 8px 8px 0 var(--ink);
-  }
-  .buy-btn:not([disabled]):active {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 var(--ink);
-  }
-  .buy-btn[disabled] {
-    opacity: 0.4; cursor: not-allowed;
-    background: var(--muted); border-color: var(--muted);
-    box-shadow: none;
-  }
-  .buy-note {
-    color: var(--muted);
-    font-size: 13px; margin-top: 14px; font-weight: 600;
-  }
+  .buy-btn:not([disabled]):hover { background: var(--green); border-color: var(--green); transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--ink); }
+  .buy-btn:not([disabled]):active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+  .buy-btn[disabled] { opacity: 0.4; cursor: not-allowed; background: var(--muted); border-color: var(--muted); box-shadow: none; }
+  .buy-note { color: var(--muted); font-size: 13px; margin-top: 14px; font-weight: 600; }
 
   /* Guarantee */
-  .guarantee {
-    margin: 44px auto;
-    padding: 22px;
-    background: var(--green);
-    color: var(--bg-soft);
-    border: 3px solid var(--ink);
-    border-radius: 18px;
-    text-align: center;
-    box-shadow: 5px 5px 0 var(--ink);
-  }
+  .guarantee { margin: 44px auto; padding: 22px; background: var(--green); color: var(--bg-soft); border: 3px solid var(--ink); border-radius: 18px; text-align: center; box-shadow: 5px 5px 0 var(--ink); }
   .guarantee strong { color: var(--bg); font-size: 20px; font-weight: 900; display: block; margin-bottom: 6px; letter-spacing: -0.01em; }
   .guarantee p { color: rgba(254,246,220,0.85); font-size: 13px; margin: 0; font-weight: 500; }
 
   /* FAQ */
-  .faq details {
-    background: var(--bg-soft);
-    border: 2px solid var(--ink);
-    border-radius: 14px;
-    padding: 0 20px;
-    margin-bottom: 10px;
-    box-shadow: 3px 3px 0 var(--ink);
-  }
-  .faq summary {
-    padding: 18px 0;
-    font-weight: 800;
-    cursor: pointer;
-    font-size: 15.5px;
-    list-style: none;
-    color: var(--ink);
-  }
+  .faq details { background: var(--bg-soft); border: 2px solid var(--ink); border-radius: 14px; padding: 0 20px; margin-bottom: 10px; box-shadow: 3px 3px 0 var(--ink); }
+  .faq summary { padding: 18px 0; font-weight: 800; cursor: pointer; font-size: 15.5px; list-style: none; color: var(--ink); }
   .faq summary::-webkit-details-marker { display: none; }
-  .faq summary::after {
-    content: "+"; float: right; color: var(--green); font-weight: 900; font-size: 22px;
-  }
+  .faq summary::after { content: "+"; float: right; color: var(--green); font-weight: 900; font-size: 22px; }
   .faq details[open] summary::after { content: "−"; }
   .faq details[open] summary { border-bottom: 1px solid var(--line); }
   .faq .answer { padding: 14px 0 18px; color: var(--ink-soft); font-size: 14.5px; font-weight: 500; }
+  .faq .answer p { margin: 0 0 8px; }
 
-  /* Footer */
+  /* Pull quotes / callouts */
+  .callout {
+    background: var(--ink); color: var(--bg);
+    border-radius: 18px; padding: 22px 26px;
+    margin: 24px 0; font-size: 17px; font-weight: 600;
+    line-height: 1.4; letter-spacing: -0.01em;
+    box-shadow: 5px 5px 0 var(--ink);
+  }
+  .callout strong { color: var(--bg); font-weight: 900; }
+  .callout .small { color: rgba(255,217,59,0.55); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; display: block; }
+
   footer {
-    margin-top: 72px;
-    padding: 28px 0 0;
-    border-top: 2px solid var(--ink);
-    text-align: center;
-    color: var(--muted);
-    font-size: 12.5px;
-    font-weight: 600;
+    margin-top: 72px; padding: 28px 0 0;
+    border-top: 2px solid var(--ink); text-align: center;
+    color: var(--muted); font-size: 12.5px; font-weight: 600;
   }
   footer a { font-weight: 700; }
 
-  /* Small delight: a floating phone emoji in the corner */
-  .float-emoji {
-    position: absolute;
-    top: 180px;
-    right: -40px;
-    font-size: 80px;
-    opacity: 0.15;
-    transform: rotate(12deg);
-    pointer-events: none;
-    z-index: 0;
-  }
+  .float-emoji { position: absolute; top: 180px; right: -40px; font-size: 80px; opacity: 0.15; transform: rotate(12deg); pointer-events: none; z-index: 0; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <span class="float-emoji" aria-hidden="true">📱</span>
+  <span class="float-emoji" aria-hidden="true">🎙️</span>
 
   <header class="nav">
-    <div class="brand">
-      <span class="brand-mark">R</span>
-      <span>Remote Claude</span>
-    </div>
+    <div class="brand"><span class="brand-mark">R</span><span>Remote Claude</span></div>
     <div class="nav-right">by Eric</div>
   </header>
 
-  <div class="eyebrow">No laptop required</div>
+  <div class="eyebrow">Voice-first · hands-free</div>
 
-  <h1>Run Claude Code<br><span class="underline">from your phone.</span></h1>
+  <h1>Run Claude Code<br><span class="underline">with your voice.</span></h1>
 
-  <p class="lede">
-    Stop being chained to your desk. The 30-minute setup that turns your iPhone into a voice-controlled remote for Claude Code running on your home Mac.
-  </p>
+  <p class="lede">Zero keyboards. Zero typing. Just talk.</p>
+  <p class="sublede">Every other Claude Code remote makes you type on your phone. This one doesn't. Siri dictates, Claude works, your AirPods read the reply back. Walk the dog while your code ships.</p>
 
   <div class="demo" aria-label="Demo video placeholder"></div>
+
+  <div class="callout">
+    "Anthropic's own voice mode is broken for 95% of users — multiple open GitHub issues, rolled out to only 5% of accounts."
+    <span class="small">— This product works today.</span>
+  </div>
+
+  <section>
+    <h2>Why it's <span class="accent">actually different</span></h2>
+    <div class="vs-table">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Anthropic<br>iMessage plugin</th>
+            <th>Claude Bridge<br>(GitHub)</th>
+            <th>Tactic<br>Remote</th>
+            <th style="background:var(--green);">Remote<br>Claude</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Text messaging</td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="yes">✓</span></td>
+            <td class="ours"><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Voice dictation</td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="no">—</span></td>
+            <td class="ours"><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Siri 'Hey Siri' triggers</td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td class="ours"><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Voice readback (AirPods)</td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td class="ours"><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Non-dev setup</td>
+            <td><span class="no">—</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+            <td class="ours"><span class="yes">✓</span></td>
+          </tr>
+          <tr>
+            <td>Works without Tailscale / tmux / Go</td>
+            <td><span class="yes">✓</span></td>
+            <td><span class="no">—</span></td>
+            <td><span class="yes">✓</span></td>
+            <td class="ours"><span class="yes">✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color: var(--ink-soft); font-size: 13px; font-weight: 500; margin-top: 14px; text-align: center;">
+      The text bridge is commodity. The voice layer isn't — and that's what changes your day.
+    </p>
+  </section>
 
   <section>
     <h2>What you get</h2>
     <p style="color: var(--ink-soft); font-size: 14px; font-weight: 600; margin: 0 0 14px;">The core product is the setup guide. Shortcuts are complimentary extras — free with purchase.</p>
     <ul class="features">
-      <li><strong>The PDF setup guide</strong> — the core deliverable. 6 setup steps, every copy-paste command, all the manual build instructions</li>
-      <li>The iMessage bridge script (lets Claude on your Mac read incoming texts)</li>
-      <li>The iMessage send script (lets Claude reply back to your phone)</li>
-      <li>macOS sleep-prevention config so your Mac never drops off while you're out</li>
-      <li>A pre-built Claude Code permission allowlist — no more 1/2/3 prompts stuck waiting for you</li>
-      <li>Troubleshooting for the 10 most common issues</li>
-      <li><strong>BONUS (free):</strong> 3 pre-built iOS Shortcuts — tap to install on your iPhone. Save 10 minutes of manual building.</li>
+      <li><strong>The PDF setup guide</strong> — the core deliverable. Every step to go from "typing at a laptop" to "hands-free voice" in under an hour.</li>
+      <li><strong>3 pre-built Siri Shortcuts</strong> (FREE bonus) — tap the iCloud link, install in 2 seconds. 'Text Claude' (voice + readback), 'Text Claude silent', 'Read Claude'.</li>
+      <li>The iMessage bridge script — captures incoming texts on your Mac and hands them to Claude Code</li>
+      <li>The iMessage send script — lets Claude text you back</li>
+      <li>macOS sleep-prevention config — your Mac stays awake while you're out</li>
+      <li>A pre-built Claude Code permission allowlist — no more 1/2/3 prompts stuck waiting for you to approve</li>
+      <li>Full troubleshooting — 10 scenarios with exact fixes (Mac sleep, DNS, permissions reset, rate limits, etc.)</li>
       <li>14-day satisfaction guarantee on the guide</li>
     </ul>
   </section>
@@ -377,7 +360,7 @@
       <label><input type="checkbox" class="req"> I already have Claude Code installed and working on my Mac</label>
       <label><input type="checkbox" class="req"> Both devices use the same Apple ID (so iMessage routes between them)</label>
       <label><input type="checkbox" class="req"> I can leave my Mac running while I'm away (plugged in, not force-sleeping)</label>
-      <label><input type="checkbox" class="req"> I've read and agree to the <a href="/remote-claude-terms.html" target="_blank" style="color:var(--green);font-weight:700;">Terms & Refund Policy</a> — including that Anthropic rate limits, ISP outages, Apple/iOS issues, and my own configuration choices are not the seller's responsibility</label>
+      <label><input type="checkbox" class="req"> I've read and agree to the <a href="/remote-claude-terms.html" target="_blank" style="color:var(--green);font-weight:700;">Terms & Refund Policy</a> — including that Anthropic rate limits, ISP outages, Apple/iOS issues, token usage, and my own configuration choices are not the seller's responsibility</label>
     </div>
 
     <div class="cta-block">
@@ -399,33 +382,54 @@
     <h2>Questions</h2>
 
     <details>
-      <summary>How does this actually work?</summary>
-      <div class="answer">Your Mac runs Claude Code in a terminal, waiting. Your iPhone sends iMessages to itself (routed to the Mac). A small script on the Mac watches for those messages and feeds them to Claude. Claude does the work and texts you back. A Siri shortcut reads the reply out loud through your AirPods. Setup takes ~30 minutes once.</div>
+      <summary>Isn't Claude Code's iMessage plugin free?</summary>
+      <div class="answer">
+        <p>Yes — Anthropic ships a free iMessage plugin. But it's <strong>text-only</strong>. No voice dictation. No Siri triggers. No hands-free readback. It also has an open bug where notifications don't auto-surface — you have to manually check Claude for new messages.</p>
+        <p>Remote Claude is the voice layer on top. Siri + Shortcuts + Announce Notifications = actual hands-free. The free plugin handles the plumbing, this handles the experience.</p>
+      </div>
     </details>
 
     <details>
-      <summary>Does this work without an iPhone?</summary>
-      <div class="answer">No. This specific setup uses iMessage + iPhone Shortcuts. Android/Windows versions aren't covered in this guide — that's a different product.</div>
+      <summary>Can't I just wait for Anthropic's voice mode?</summary>
+      <div class="answer">
+        <p>You can. Heads-up: voice mode has been in limited rollout (~5% of accounts) for months, and open GitHub issues #38918, #30293, #30904 show it returning "no speech detected" even when the mic works. When it does ship broadly, it's still in-app voice — not Siri-integrated, not iMessage-integrated.</p>
+        <p>This guide works right now, on any iPhone, with no waitlist.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Do I need AirPods?</summary>
+      <div class="answer">
+        <p>Nope. Voice dictation works on iPhone's built-in mic + speaker. AirPods make it nicer (Announce Notifications auto-reads through them) but they're a bonus, not required.</p>
+      </div>
     </details>
 
     <details>
       <summary>Do I need to be a developer?</summary>
-      <div class="answer">You need to already be using Claude Code. Beyond that, the guide is copy-paste — no writing code, just running commands we wrote for you.</div>
+      <div class="answer">
+        <p>You need to already be using Claude Code. Beyond that, the guide is copy-paste — no writing code, just running commands we wrote for you. Tailscale, Go, tmux — none of that is required. Just Mac, iPhone, Claude Code.</p>
+      </div>
     </details>
 
     <details>
       <summary>What if my Mac goes to sleep?</summary>
-      <div class="answer">Full chapter on preventing Mac sleep — three settings for any Mac, plus an extra step for closed-lid MacBooks using the free Amphetamine app.</div>
+      <div class="answer">
+        <p>Full chapter on preventing Mac sleep — three settings for any Mac, plus an extra step for closed-lid MacBooks using the free Amphetamine app.</p>
+      </div>
     </details>
 
     <details>
       <summary>Will Claude still ask me to approve things while I'm away?</summary>
-      <div class="answer">Only for commands you haven't pre-approved. Chapter 1.6 gives you a starting settings.json block that covers the common stuff. You add patterns once and they stop prompting.</div>
+      <div class="answer">
+        <p>Only for commands you haven't pre-approved. The guide includes a starter settings.json block that covers the common stuff. You add patterns once and they stop prompting forever.</p>
+      </div>
     </details>
 
     <details>
       <summary>What happens after I pay?</summary>
-      <div class="answer">Stripe confirms payment. You get the PDF by email within minutes. Open it on your Mac and work through the chapters in order — most people finish in under an hour.</div>
+      <div class="answer">
+        <p>Stripe confirms payment. PDF + shortcut iCloud links arrive by email within minutes. Open on your Mac, work through the chapters — most people finish in under an hour.</p>
+      </div>
     </details>
 
   </section>
@@ -440,7 +444,7 @@
 <script>
   const reqs = document.querySelectorAll('.req');
   const btn = document.getElementById('buyBtn');
-  const PAYMENT_URL = 'https://buy.stripe.com/REPLACE_ME'; // Eric: replace with your Stripe Payment Link
+  const PAYMENT_URL = 'https://buy.stripe.com/REPLACE_ME';
 
   function update() {
     const ok = [...reqs].every(c => c.checked);
