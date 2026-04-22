@@ -89,6 +89,12 @@ function getDeepLink(platform: string, value: string): string {
   }
 }
 
+function tapHaptic() {
+  if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+    try { navigator.vibrate(20) } catch {}
+  }
+}
+
 export function PublicProfile({ username }: { username: string }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [paymentLinks, setPaymentLinks] = useState<PaymentLink[]>([])
@@ -346,7 +352,7 @@ export function PublicProfile({ username }: { username: string }) {
                   const isApplePay = normalizedPlatform === "applepay" || normalizedPlatform === "applecash"
 
                   const btnClass =
-                    "relative w-full h-14 px-16 text-base font-semibold rounded-2xl shadow-md transition-all hover:shadow-lg flex items-center justify-center text-white"
+                    "group relative w-full h-14 px-16 text-base font-semibold rounded-2xl shadow-md transition-all duration-150 hover:shadow-lg active:scale-[0.97] flex items-center justify-center text-white overflow-hidden"
                   const btnStyle: React.CSSProperties = {
                     backgroundColor: style.bg,
                     boxShadow: `0 4px 16px ${style.bg}30`,
@@ -355,9 +361,16 @@ export function PublicProfile({ username }: { username: string }) {
                     normalizedPlatform === "venmo" ? "w-7 h-7" : "w-6 h-6"
 
                   const IconSlot = (
-                    <span className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center justify-center">
+                    <span className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center justify-center z-10">
                       <PaymentIcon platform={link.platform} className={iconSize} />
                     </span>
+                  )
+
+                  const TapHighlight = (
+                    <span
+                      className="pointer-events-none absolute inset-0 rounded-2xl bg-white/0 group-active:bg-white/25 transition-colors duration-75"
+                      aria-hidden
+                    />
                   )
 
                   if (isZelle) {
@@ -366,14 +379,16 @@ export function PublicProfile({ username }: { username: string }) {
                         key={link.id}
                         type="button"
                         onClick={async () => {
+                          tapHaptic()
                           await navigator.clipboard.writeText(link.value)
                           alert("Zelle info copied. Open your bank app → Zelle → Paste → Send.")
                         }}
                         className={btnClass}
                         style={btnStyle}
                       >
+                        {TapHighlight}
                         {IconSlot}
-                        <span>{link.label || "Zelle"}</span>
+                        <span className="relative z-10">{link.label || "Zelle"}</span>
                       </button>
                     )
                   }
@@ -384,14 +399,16 @@ export function PublicProfile({ username }: { username: string }) {
                         key={link.id}
                         type="button"
                         onClick={async () => {
+                          tapHaptic()
                           await navigator.clipboard.writeText(link.value)
                           alert("Apple Pay info copied. Open Wallet → Apple Cash → Send → Paste → Send.")
                         }}
                         className={btnClass}
                         style={btnStyle}
                       >
+                        {TapHighlight}
                         {IconSlot}
-                        <span>{link.label || "Apple Pay"}</span>
+                        <span className="relative z-10">{link.label || "Apple Pay"}</span>
                       </button>
                     )
                   }
@@ -402,11 +419,13 @@ export function PublicProfile({ username }: { username: string }) {
                       href={linkUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={tapHaptic}
                       className={btnClass}
                       style={btnStyle}
                     >
+                      {TapHighlight}
                       {IconSlot}
-                      <span>{link.label || link.platform}</span>
+                      <span className="relative z-10">{link.label || link.platform}</span>
                     </a>
                   )
                 })}
